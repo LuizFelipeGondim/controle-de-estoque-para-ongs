@@ -139,3 +139,4 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 
 backend/db/app.db
+backend/docs/context.md
