@@ -2,13 +2,15 @@ import type { FastifyInstance } from "fastify";
 import { db } from "../database.js";
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
+import { checkSessionIdExists } from "../middlewares/check-session-id-exists.js";
 
 export async function batchRoutes(app: FastifyInstance) {
   // POST /batches - Registro de Entrada de Doação
-  app.post("/", async (request, reply) => {
+  app.post("/", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
     const createBatchSchema = z.object({
       item_type_id: z.uuid("Formato de ID de item_type inválido"),
-      received_by: z.uuid("Formato de ID de usuário inválido"), // Posteriormente será extraído do token JWT
       initial_quantity: z.number().positive("A quantidade deve ser maior que zero"),
       expiration_date: z.iso.datetime({ message: "A data de validade deve ser uma string ISO válida" }),
     });
@@ -16,11 +18,12 @@ export async function batchRoutes(app: FastifyInstance) {
     try {
       const data = createBatchSchema.parse(request.body);
       const id = randomUUID();
+      const { sessionId } = request.cookies;
 
       await db("batches").insert({
         id,
         item_type_id: data.item_type_id,
-        received_by: data.received_by,
+        received_by: sessionId,
         initial_quantity: data.initial_quantity,
         current_quantity: data.initial_quantity, // Iguala a original no recebimento
         expiration_date: data.expiration_date,
@@ -107,7 +110,9 @@ export async function batchRoutes(app: FastifyInstance) {
   });
 
   // PATCH /batches/:id/quantity - Edição focada na Quantidade do Lote
-  app.patch("/:id/quantity", async (request, reply) => {
+  app.patch("/:id/quantity", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
 
     const paramSchema = z.object({ id: z.uuid("ID de lote inválido") });
     const updateQuantitySchema = z.object({
@@ -145,7 +150,9 @@ export async function batchRoutes(app: FastifyInstance) {
   });
 
   // PATCH /batches/:id/status - Edição focada no Status do Lote
-  app.patch("/:id/status", async (request, reply) => {
+  app.patch("/:id/status", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
     const paramSchema = z.object({ id: z.string().uuid("ID de lote inválido") });
     const updateStatusSchema = z.object({
       status: z.enum(["disponivel", "reservado", "esgotado", "vencido"], {
@@ -181,7 +188,9 @@ export async function batchRoutes(app: FastifyInstance) {
   });
 
   // DELETE /batches/:id - Remoção Completa com verificação de Foreign Key
-  app.delete("/:id", async (request, reply) => {
+  app.delete("/:id", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
     const paramSchema = z.object({ id: z.string().uuid("ID de lote inválido") });
 
     try {
