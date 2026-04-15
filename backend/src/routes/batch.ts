@@ -38,6 +38,23 @@ export async function batchRoutes(app: FastifyInstance) {
     }
   });
 
+  // GET /batches - Listar todos os lotes com o nome do item
+  app.get("/", async (request, reply) => {
+    try {
+      const batches = await db("batches")
+        .join("item_types", "batches.item_type_id", "=", "item_types.id")
+        .select(
+          "batches.*",
+          "item_types.name as item_name"
+        );
+        
+      return reply.send(batches);
+    } catch (error) {
+      console.error(error);
+      return reply.status(500).send({ message: "Erro ao listar lotes." });
+    }
+  });
+
   // PATCH /batches/:id/quantity - Edição focada na Quantidade do Lote
   app.patch("/:id/quantity", async (request, reply) => {
 
