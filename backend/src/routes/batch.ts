@@ -38,18 +38,69 @@ export async function batchRoutes(app: FastifyInstance) {
     }
   });
 
-  // GET /batches - Listar todos os lotes com o nome do item
+  // GET /batches - Listar todos os lotes com o nome do item (e suporte a filtros)
   app.get("/", async (request, reply) => {
+    const filterQuerySchema = z.object({
+      item_type_id: z.uuid("Formato de ID de item_type inválido").optional(),
+      expiration_from: z.coerce.date().optional(),
+      expiration_to: z.coerce.date().optional(),
+      status: z.enum(["disponivel", "reservado", "esgotado", "vencido"]).optional(),
+      category: z.string().optional(),
+      is_essential: z.enum(["true", "false"]).transform((v) => v === "true").optional(),
+      nutritional_info: z.string().optional(),
+    });
     try {
-      const batches = await db("batches")
+      // 1. Validando a Query String
+      const filters = filterQuerySchema.parse(request.query);
+      // 2. Iniciando a construção da query no Knex
+      let query = db("batches")
         .join("item_types", "batches.item_type_id", "=", "item_types.id")
         .select(
           "batches.*",
-          "item_types.name as item_name"
+          "item_types.name as item_name",
+          "item_types.category as item_category",
+          "item_types.unit_of_measure as item_unit_of_measure",
+          "item_types.is_essential as item_is_essential",
+          "item_types.nutritional_info as item_nutritional_info",
+          "item_types.conversion_factor as item_conversion_factor",
+          "item_types.min_stock_level as item_min_stock_level",
         );
+      // 3. Aplicando os filtros caso eles tenham sido repassados na URL
+      if (filters.item_type_id) {
+        query = query.where("batches.item_type_id", filters.item_type_id);
+      }
+      if (filters.status) {
+        query = query.where("batches.status", filters.status);
+      }
+      if (filters.expiration_from) {
+        query = query.where("batches.expiration_date", ">=", filters.expiration_from);
+      }
+      if (filters.expiration_to) {
+        query = query.where("batches.expiration_date", "<=", filters.expiration_to);
+      }
+
+      if (filters.category) {
+        query = query.where("item_types.category", filters.category);
+      }
+
+      if (filters.is_essential !== undefined) {
+        query = query.where("item_types.is_essential", filters.is_essential);
+      }
+
+      if (filters.nutritional_info) {
+        query = query.where("item_types.nutritional_info", "like", `%${filters.nutritional_info}%`);
+      }
+
+      // Opcional: ordenar pelos que vencem mais cedo primeiro por padrão
+      query = query.orderBy("batches.expiration_date", "asc");
+      // 4. Aguardando a resolução da query final montada
+      const batches = await query;
         
       return reply.send(batches);
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ message: "Parâmetros de filtro inválidos", errors: error.flatten() });
+      }
       console.error(error);
       return reply.status(500).send({ message: "Erro ao listar lotes." });
     }
