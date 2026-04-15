@@ -9,7 +9,7 @@ export async function itemTypeRoutes(app: FastifyInstance) {
     const createItemTypeBodySchema = z.object({
       name: z.string().min(1, "Nome é obrigatório"),
       category: z.string().min(1, "Categoria é obrigatória"),
-      unit_of_measure: z.enum(["kg", "litro", "unidade", "caixa", "pacote"]),
+      unit_of_measure: z.enum(["kg", "litro", "unidade", "caixa"]),
       min_stock_level: z.number().min(0).default(0),
       is_essential: z.boolean().default(false),
       nutritional_info: z.string().optional(),
@@ -83,4 +83,39 @@ export async function itemTypeRoutes(app: FastifyInstance) {
 
     return reply.status(204).send();
   });
+
+  // PUT /items/:id - Editar tipo de item por ID
+  app.put("/:id", async (request, reply) => {
+    const updateItemTypeParamsSchema = z.object({
+      id: z.uuid(),
+    });
+
+    const updateItemTypeBodySchema = z.object({
+      name: z.string().min(1, "Nome é obrigatório").optional(),
+      category: z.string().min(1, "Categoria é obrigatória").optional(),
+      unit_of_measure: z
+        .enum(["kg", "litro", "unidade", "caixa"])
+        .optional(),
+      min_stock_level: z.number().min(0).optional(),
+      is_essential: z.boolean().optional(),
+      nutritional_info: z.string().optional(),
+      conversion_factor: z.number().positive().optional(),
+    });
+
+    const { id } = updateItemTypeParamsSchema.parse(request.params);
+
+    const item = await db("item_types").where({ id }).first();
+
+    if (!item) {
+      return reply.status(404).send({ error: "Item não encontrado" });
+    }
+
+    const data = updateItemTypeBodySchema.parse(request.body);
+
+    await db("item_types")
+      .where({ id })
+      .update(data);
+
+    return reply.status(204).send();
+});
 }
