@@ -10,9 +10,9 @@ export async function batchRoutes(app: FastifyInstance) {
     preHandler: [checkSessionIdExists]
   }, async (request, reply) => {
     const createBatchSchema = z.object({
-      item_type_id: z.uuid("Formato de ID de item_type inválido"),
-      initial_quantity: z.number().positive("A quantidade deve ser maior que zero"),
-      expiration_date: z.iso.datetime({ message: "A data de validade deve ser uma string ISO válida" }),
+      item_type_id: z.uuid("Formato de ID de item_type inválido."),
+      initial_quantity: z.number().positive("A quantidade deve ser maior que zero."),
+      expiration_date: z.iso.datetime({ message: "A data de validade deve ser uma string ISO válida." }),
     });
 
     try {
@@ -36,22 +36,24 @@ export async function batchRoutes(app: FastifyInstance) {
         return reply.status(400).send({ message: "Erro de validação", errors: error.flatten() });
       }
 
-      console.error(error);
       return reply.status(500).send({ message: "Erro interno no servidor ao registrar lote." });
     }
   });
 
   // GET /batches - Listar todos os lotes com o nome do item (e suporte a filtros)
-  app.get("/", async (request, reply) => {
+  app.get("/", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
     const filterQuerySchema = z.object({
-      item_type_id: z.uuid("Formato de ID de item_type inválido").optional(),
+      item_type_id: z.uuid("Formato de ID de item_type inválido.").optional(),
       expiration_from: z.coerce.date().optional(),
       expiration_to: z.coerce.date().optional(),
-      status: z.enum(["disponivel", "reservado", "esgotado", "vencido"]).optional(),
+      status: z.enum(["disponivel", "esgotado"]).optional(),
       category: z.string().optional(),
       is_essential: z.enum(["true", "false"]).transform((v) => v === "true").optional(),
       nutritional_info: z.string().optional(),
     });
+
     try {
       // 1. Validando a Query String
       const filters = filterQuerySchema.parse(request.query);
@@ -68,16 +70,20 @@ export async function batchRoutes(app: FastifyInstance) {
           "item_types.conversion_factor as item_conversion_factor",
           "item_types.min_stock_level as item_min_stock_level",
         );
+
       // 3. Aplicando os filtros caso eles tenham sido repassados na URL
       if (filters.item_type_id) {
         query = query.where("batches.item_type_id", filters.item_type_id);
       }
+
       if (filters.status) {
         query = query.where("batches.status", filters.status);
       }
+
       if (filters.expiration_from) {
         query = query.where("batches.expiration_date", ">=", filters.expiration_from);
       }
+
       if (filters.expiration_to) {
         query = query.where("batches.expiration_date", "<=", filters.expiration_to);
       }
@@ -96,13 +102,14 @@ export async function batchRoutes(app: FastifyInstance) {
 
       // Opcional: ordenar pelos que vencem mais cedo primeiro por padrão
       query = query.orderBy("batches.expiration_date", "asc");
+
       // 4. Aguardando a resolução da query final montada
       const batches = await query;
         
       return reply.send(batches);
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: "Parâmetros de filtro inválidos", errors: error.flatten() });
+        return reply.status(400).send({ message: "Parâmetros de filtro inválidos.", errors: error.flatten() });
       }
       console.error(error);
       return reply.status(500).send({ message: "Erro ao listar lotes." });
@@ -114,9 +121,9 @@ export async function batchRoutes(app: FastifyInstance) {
     preHandler: [checkSessionIdExists]
   }, async (request, reply) => {
 
-    const paramSchema = z.object({ id: z.uuid("ID de lote inválido") });
+    const paramSchema = z.object({ id: z.uuid("ID de lote inválido.") });
     const updateQuantitySchema = z.object({
-      current_quantity: z.number().nonnegative("A quantidade atual não pode estar negativa"),
+      current_quantity: z.number().nonnegative("A quantidade atual não pode estar negativa."),
     });
 
     try {
@@ -128,11 +135,11 @@ export async function batchRoutes(app: FastifyInstance) {
         return reply.status(404).send({ message: "Lote não encontrado." });
       }
 
-      if (batch.status === "esgotado" || batch.status === "vencido") {
-        return reply.status(403).send({ message: "Não é possível alterar a quantidade de um lote esgotado ou vencido." });
+      if (batch.status === "esgotado") {
+        return reply.status(403).send({ message: "Não é possível alterar a quantidade de um lote esgotado." });
       }
 
-      const newStatus = current_quantity === 0 ? "esgotado" : batch.status;
+      const newStatus = current_quantity === 0 ? "esgotado" : "disponivel";
 
       await db("batches").where({ id }).update({
         current_quantity,
@@ -143,7 +150,7 @@ export async function batchRoutes(app: FastifyInstance) {
       return reply.send({ message: "Quantidade atualizada com sucesso." });
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: "Valores inválidos", errors: error.format() });
+        return reply.status(400).send({ message: "Valores inválidos", errors: error.flatten() });
       }
       return reply.status(500).send({ message: "Erro de processamento interno." });
     }
@@ -153,10 +160,10 @@ export async function batchRoutes(app: FastifyInstance) {
   app.patch("/:id/status", {
     preHandler: [checkSessionIdExists]
   }, async (request, reply) => {
-    const paramSchema = z.object({ id: z.string().uuid("ID de lote inválido") });
+    const paramSchema = z.object({ id: z.uuid("ID de lote inválido.") });
     const updateStatusSchema = z.object({
-      status: z.enum(["disponivel", "reservado", "esgotado", "vencido"], {
-        message: "O status fornecido é inválido. Opções: disponivel, reservado, esgotado, vencido"
+      status: z.enum(["disponivel", "esgotado"], {
+        message: "O status fornecido é inválido. Opções: disponivel, esgotado."
       }),
     });
 
@@ -169,8 +176,8 @@ export async function batchRoutes(app: FastifyInstance) {
         return reply.status(404).send({ message: "Lote não encontrado." });
       }
 
-      if (batch.status === "esgotado" || batch.status === "vencido") {
-        return reply.status(403).send({ message: "Lotes esgotados ou vencidos não podem ter o seu status modificado manualmente." });
+      if (batch.status === "esgotado") {
+        return reply.status(403).send({ message: "Lotes esgotados não podem ter o seu status modificado." });
       }
 
       await db("batches").where({ id }).update({
@@ -191,7 +198,7 @@ export async function batchRoutes(app: FastifyInstance) {
   app.delete("/:id", {
     preHandler: [checkSessionIdExists]
   }, async (request, reply) => {
-    const paramSchema = z.object({ id: z.string().uuid("ID de lote inválido") });
+    const paramSchema = z.object({ id: z.uuid("ID de lote inválido.") });
 
     try {
       const { id } = paramSchema.parse(request.params);
@@ -205,11 +212,11 @@ export async function batchRoutes(app: FastifyInstance) {
 
       return reply.status(204).send();
     } catch (error: any) {
-      if (error instanceof z.ZodError) return reply.status(400).send({ message: "Payload ID de remoção inválido", errors: error.format() });
+      if (error instanceof z.ZodError) return reply.status(400).send({ message: "Payload ID de remoção inválido.", errors: error.format() });
 
       if (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY' || error.message.includes('FOREIGN KEY constraint failed')) {
         return reply.status(409).send({
-          message: "Este lote não pode ser deletado pois já está atrelado a registros de doações (donation_items). Delete a doação primeiro."
+          message: "Este lote não pode ser deletado pois já está atrelado a registros de doações (donation_items)."
         });
       }
 

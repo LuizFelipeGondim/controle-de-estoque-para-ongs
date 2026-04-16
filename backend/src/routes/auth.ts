@@ -2,11 +2,12 @@ import type { FastifyInstance } from "fastify";
 import { z } from "zod";
 import bcrypt from "bcrypt";
 import { db } from "../database.js";
+import { checkSessionIdExists } from "../middlewares/check-session-id-exists.js";
 
 export async function authRoutes(app: FastifyInstance) {
   app.post("/login", async (request, reply) => {
     const loginSchema = z.object({
-      email: z.string().email(),
+      email: z.email(),
       password: z.string()
     });
 
@@ -31,7 +32,14 @@ export async function authRoutes(app: FastifyInstance) {
         maxAge: 1000 * 60 * 60 * 24 * 7, // 7 dias
       });
 
-      return reply.send({ message: "Login realizado com sucesso!" });
+      return reply.send({ 
+        message: "Login realizado com sucesso!",
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email
+        }
+      });
     } catch (error) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({ message: "Dados inválidos.", errors: error.format() });
@@ -40,8 +48,14 @@ export async function authRoutes(app: FastifyInstance) {
     }
   });
 
-  app.post("/logout", async (request, reply) => {
-    reply.clearCookie("sessionId", { path: "/" });
-    return reply.send({ message: "Logout finalizado com sucesso." });
+  app.post("/logout", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
+    try {
+      reply.clearCookie("sessionId", { path: "/" });
+      return reply.send({ message: "Logout finalizado com sucesso." });
+    } catch (error) {
+      return reply.status(500).send({ message: "Erro ao realizar logout." });
+    }
   });
 }
