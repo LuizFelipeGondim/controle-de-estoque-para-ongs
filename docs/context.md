@@ -79,10 +79,12 @@ controle-de-estoque-para-ongs/
 │   └── context.md
 ├── frontend/           # Aplicação React + Vite
 │   ├── src/
-│   │   ├── App.jsx         # Componente raiz — renderiza LoginPage
-│   │   ├── LoginPage.jsx   # Página de login de colaboradores
-│   │   ├── LoginPage.css   # Estilos da página de login
-│   │   └── index.css       # Estilos globais e design tokens
+│   │   ├── App.jsx             # Roteador por estado (login ↔ stock)
+│   │   ├── LoginPage.jsx       # Página de login de colaboradores
+│   │   ├── LoginPage.css       # Estilos da página de login
+│   │   ├── StockOverview.jsx   # Página de visão geral dos estoques (placeholder)
+│   │   ├── StockOverview.css   # Estilos da visão geral
+│   │   └── index.css           # Estilos globais e design tokens
 │   ├── index.html      # Entry point HTML
 │   ├── vite.config.js
 │   └── package.json
@@ -92,20 +94,42 @@ controle-de-estoque-para-ongs/
 
 ---
 
+## Navegação (Roteamento por Estado)
+
+O projeto não utiliza React Router. A navegação é controlada por `useState` em `App.jsx`:
+
+```
+Login  →  [clica Entrar]  →  StockOverview
+                                   ↓
+                             [clica Sair]
+                                   ↓
+                               Login
+```
+
+---
+
 ## Estado Atual
 
 ### Página de Login de Colaboradores (concluída)
-A tela principal do frontend é agora a página de login da **Área do Colaborador**, substituindo a antiga landing page institucional. Construída em React com design premium (glassmorphism + tema escuro), inclui:
+A tela principal do frontend é a página de login da **Área do Colaborador**. Construída em React com design premium (glassmorphism + tema escuro), inclui:
 
 - **Card glassmorphism** — container centralizado com backdrop blur, borda sutil e linha de acento gradiente no topo.
 - **Identidade visual** — logo 🌱 ONGConecta, badge pulsante "Área do Colaborador".
 - **Campo Nome do colaborador** — input de texto com ícone e foco estilizado.
 - **Campo Senha** — input de senha com botão de mostrar/ocultar (👁️ / 🙈).
-- **Botão Entrar** — desativado (`disabled`) visualmente e funcionalmente, com mensagem "Sistema de autenticação em desenvolvimento".
+- **Botão Entrar** — ativo, navega para a página de visão geral dos estoques (`StockOverview`).
 - **Fundo animado** — dois orbs com gradiente em movimento suave (`orb-drift`).
 - **Responsivo** — layout adaptado para telas menores que 500px.
 
 > A landing page institucional (Navbar, Hero, Stats, About, Values, Donation Banner, Footer) foi removida do fluxo principal e pode ser reintegrada futuramente como rota separada.
+
+### Visão Geral dos Estoques — `StockOverview` (placeholder)
+Página de destino após o login. Ainda sem conteúdo funcional, exibe:
+
+- **Header fixo** — logo ONGConecta e botão "Sair" (retorna ao login).
+- **Placeholder central** — ícone 📦, título "Visão Geral dos Estoques", descrição e badge "Em breve".
+
+Esta página será desenvolvida nas próximas iterações para exibir os dados reais do estoque.
 
 ### Sistema de Estoque (em desenvolvimento)
 As funcionalidades de autenticação real, CRUD de itens, controle de entradas/saídas, alertas e dashboard estão planejadas no backlog e serão implementadas nas próximas iterações.
