@@ -1,15 +1,14 @@
 import { useState } from 'react'
 import './LoginPage.css'
 
-export default function LoginPage() {
+export default function LoginPage({ onLogin }) {
   const [name, setName] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
 
-  /* Botão desativado até integração com backend */
   const handleSubmit = (e) => {
     e.preventDefault()
-    /* autenticação ainda não disponível */
+    onLogin()
   }
 
   return (
@@ -103,17 +102,10 @@ export default function LoginPage() {
             id="btn-login-submit"
             type="submit"
             className="login-form__submit"
-            disabled
-            aria-disabled="true"
-            title="Autenticação ainda não disponível"
           >
-            <span className="login-form__submit-icon" aria-hidden="true">🔒</span>
+            <span className="login-form__submit-icon" aria-hidden="true">→</span>
             Entrar
           </button>
-
-          <p className="login-form__unavailable">
-            Sistema de autenticação em desenvolvimento.
-          </p>
         </form>
       </main>
     </div>

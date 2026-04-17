@@ -270,12 +270,23 @@
   font-size: 0.95rem;
   font-weight: 700;
   letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.4);
-  background: rgba(46, 125, 82, 0.15);
-  border: 1.5px solid rgba(46, 125, 82, 0.2);
-  cursor: not-allowed;
-  transition: none;
+  color: #fff;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 20px rgba(46, 125, 82, 0.4);
+  transition: all var(--transition-base);
   margin-top: var(--spacing-sm);
+}
+
+.login-form__submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(46, 125, 82, 0.55);
+}
+
+.login-form__submit:active {
+  transform: translateY(0);
+  box-shadow: 0 4px 16px rgba(46, 125, 82, 0.4);
 }
 
 .login-form__submit-icon {
