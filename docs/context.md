@@ -123,13 +123,28 @@ A tela principal do frontend é a página de login da **Área do Colaborador**. 
 
 > A landing page institucional (Navbar, Hero, Stats, About, Values, Donation Banner, Footer) foi removida do fluxo principal e pode ser reintegrada futuramente como rota separada.
 
-### Visão Geral dos Estoques — `StockOverview` (placeholder)
-Página de destino após o login. Ainda sem conteúdo funcional, exibe:
+### Visão Geral dos Estoques — `StockOverview` (concluída com dados mock)
+Página de destino após o login. Composta por três seções principais, com dados estáticos (mock) até a integração com o backend:
 
-- **Header fixo** — logo ONGConecta e botão "Sair" (retorna ao login).
-- **Placeholder central** — ícone 📦, título "Visão Geral dos Estoques", descrição e badge "Em breve".
+**Header fixo** — logo ONGConecta e botão "Sair" (retorna à tela de login).
 
-Esta página será desenvolvida nas próximas iterações para exibir os dados reais do estoque.
+**Seção 1 — ⚠️ Avisos**
+Dois painéis lado a lado com alertas operacionais:
+- *Validade Próxima* — lista itens com vencimento iminente, com badge de urgência colorido: vermelho (≤ 3 dias), âmbar (≤ 7 dias), verde (≤ 15 dias).
+- *Estoque Crítico* — lista categorias abaixo da quantidade mínima configurada, exibindo o saldo atual vs. o mínimo esperado.
+
+**Seção 2 — 📦 Estoque por Categoria**
+Grid de cards para cada categoria de alimento: Arroz, Feijão, Macarrão, Grãos, Carne, Legume e Verdura. Cada card exibe:
+- Emoji identificador, nome e quantidade atual em kg.
+- Barra de progresso (verde = ok, vermelho = crítico).
+- Badge "Crítico" quando o estoque está abaixo do mínimo.
+
+**Seção 3 — 📊 Dashboard**
+Dois cards de métrica de impacto social:
+- *Doações realizadas* — total numérico acumulado.
+- *Alimentos recebidos* — total em kg acumulado.
+
+> Todos os dados são mock estáticos, aguardando integração com o backend.
 
 ### Sistema de Estoque (em desenvolvimento)
 As funcionalidades de autenticação real, CRUD de itens, controle de entradas/saídas, alertas e dashboard estão planejadas no backlog e serão implementadas nas próximas iterações.
