@@ -1,14 +1,41 @@
 import { useState } from 'react'
+import { API_URL } from './config/api'
 import './LoginPage.css'
 
 export default function LoginPage({ onLogin }) {
-  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    onLogin()
+    setError('')
+    setIsLoading(true)
+
+    try {
+      const response = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ email, password })
+      })
+
+      if (response.ok) {
+        onLogin()
+      } else {
+        setError('E-mail ou senha incorretos.')
+      }
+    } catch (err) {
+      console.log(JSON.stringify({ email, password }))
+      console.error(err)
+      setError('Erro ao conectar ao servidor.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (
@@ -50,21 +77,21 @@ export default function LoginPage({ onLogin }) {
           aria-label="Formulário de login"
           noValidate
         >
-          {/* Name field */}
+          {/* Email field */}
           <div className="login-form__group">
-            <label htmlFor="login-name" className="login-form__label">
-              Nome do colaborador
+            <label htmlFor="login-email" className="login-form__label">
+              E-mail
             </label>
             <div className="login-form__input-wrap">
-              <span className="login-form__input-icon" aria-hidden="true">👤</span>
+              <span className="login-form__input-icon" aria-hidden="true">✉️</span>
               <input
-                id="login-name"
-                type="text"
+                id="login-email"
+                type="email"
                 className="login-form__input"
-                placeholder="Ex: João Silva"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="name"
+                placeholder="Ex: joao@ong.org"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 spellCheck={false}
               />
             </div>
@@ -98,13 +125,15 @@ export default function LoginPage({ onLogin }) {
           </div>
 
           {/* Submit */}
+          {error && <div className="login-form__error" style={{ color: '#ff4d4f', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>{error}</div>}
           <button
             id="btn-login-submit"
             type="submit"
             className="login-form__submit"
+            disabled={isLoading}
           >
             <span className="login-form__submit-icon" aria-hidden="true">→</span>
-            Entrar
+            {isLoading ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
       </main>
