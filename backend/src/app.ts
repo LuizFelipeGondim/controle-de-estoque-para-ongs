@@ -1,5 +1,6 @@
 import fastify from "fastify";
 import cookie from "@fastify/cookie";
+import cors from "@fastify/cors";
 import { authRoutes } from "./routes/auth.js";
 import { batchRoutes } from "./routes/batch.js"
 import { itemTypeRoutes } from "./routes/item-types.js";
@@ -8,6 +9,7 @@ import { donationPacketRoutes } from "./routes/donation-packets.js";
 
 export const app = fastify();
 
+app.register(cors);
 app.register(cookie);
 
 // Registro modular das rotas
