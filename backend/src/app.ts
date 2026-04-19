@@ -3,8 +3,8 @@ import cookie from "@fastify/cookie";
 import { authRoutes } from "./routes/auth.js";
 import { batchRoutes } from "./routes/batch.js"
 import { itemTypeRoutes } from "./routes/item-types.js";
-import { donationRoutes } from "./routes/donations.js";
-import { dashboardRoutes } from "./routes/dashboard.js";
+import { donationItemsRoutes } from "./routes/donation-items.js";
+import { donationPacketRoutes } from "./routes/donation-packets.js";
 
 export const app = fastify();
 
@@ -14,5 +14,5 @@ app.register(cookie);
 app.register(authRoutes, { prefix: "auth" });
 app.register(batchRoutes, { prefix: "batch" });
 app.register(itemTypeRoutes, { prefix: "items" });
-app.register(donationRoutes, { prefix: "donations" });
-app.register(dashboardRoutes, { prefix: "dashboard" });
+app.register(donationItemsRoutes, { prefix: "donation-items" });
+app.register(donationPacketRoutes, { prefix: "donation-packets" });
