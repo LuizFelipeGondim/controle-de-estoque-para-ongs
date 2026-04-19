@@ -55,9 +55,8 @@ export async function batchRoutes(app: FastifyInstance) {
     });
 
     try {
-      // 1. Validando a Query String
       const filters = filterQuerySchema.parse(request.query);
-      // 2. Iniciando a construção da query no Knex
+
       let query = db("batches")
         .join("item_types", "batches.item_type_id", "=", "item_types.id")
         .select(
@@ -71,7 +70,6 @@ export async function batchRoutes(app: FastifyInstance) {
           "item_types.min_stock_level as item_min_stock_level",
         );
 
-      // 3. Aplicando os filtros caso eles tenham sido repassados na URL
       if (filters.item_type_id) {
         query = query.where("batches.item_type_id", filters.item_type_id);
       }
@@ -100,12 +98,10 @@ export async function batchRoutes(app: FastifyInstance) {
         query = query.where("item_types.nutritional_info", "like", `%${filters.nutritional_info}%`);
       }
 
-      // Opcional: ordenar pelos que vencem mais cedo primeiro por padrão
       query = query.orderBy("batches.expiration_date", "asc");
 
-      // 4. Aguardando a resolução da query final montada
       const batches = await query;
-        
+
       return reply.send(batches);
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -113,6 +109,45 @@ export async function batchRoutes(app: FastifyInstance) {
       }
       console.error(error);
       return reply.status(500).send({ message: "Erro ao listar lotes." });
+    }
+  });
+
+  // GET /batches/:id - Buscar lote por ID
+  app.get("/:id", {
+    preHandler: [checkSessionIdExists]
+  }, async (request, reply) => {
+    const getBatchParamsSchema = z.object({
+      id: z.uuid(),
+    });
+
+    try {
+      const { id } = getBatchParamsSchema.parse(request.params);
+
+      const batch = await db("batches")
+        .join("item_types", "batches.item_type_id", "=", "item_types.id")
+        .select(
+          "batches.*",
+          "item_types.name as item_name",
+          "item_types.category as item_category",
+          "item_types.unit_of_measure as item_unit_of_measure",
+          "item_types.is_essential as item_is_essential",
+          "item_types.nutritional_info as item_nutritional_info",
+          "item_types.conversion_factor as item_conversion_factor"
+        )
+        .where({ "batches.id": id })
+        .first();
+
+      if (!batch) {
+        return reply.status(404).send({ message: "Lote não encontrado." });
+      }
+
+      return reply.send(batch);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return reply.status(400).send({ message: "ID de lote inválido.", errors: error.flatten() });
+      }
+
+      return reply.status(500).send({ message: "Erro interno no servidor." });
     }
   });
 
@@ -151,44 +186,6 @@ export async function batchRoutes(app: FastifyInstance) {
     } catch (error) {
       if (error instanceof z.ZodError) {
         return reply.status(400).send({ message: "Valores inválidos", errors: error.flatten() });
-      }
-      return reply.status(500).send({ message: "Erro de processamento interno." });
-    }
-  });
-
-  // PATCH /batches/:id/status - Edição focada no Status do Lote
-  app.patch("/:id/status", {
-    preHandler: [checkSessionIdExists]
-  }, async (request, reply) => {
-    const paramSchema = z.object({ id: z.uuid("ID de lote inválido.") });
-    const updateStatusSchema = z.object({
-      status: z.enum(["disponivel", "esgotado"], {
-        message: "O status fornecido é inválido. Opções: disponivel, esgotado."
-      }),
-    });
-
-    try {
-      const { id } = paramSchema.parse(request.params);
-      const { status } = updateStatusSchema.parse(request.body);
-
-      const batch = await db("batches").where({ id }).first();
-      if (!batch) {
-        return reply.status(404).send({ message: "Lote não encontrado." });
-      }
-
-      if (batch.status === "esgotado") {
-        return reply.status(403).send({ message: "Lotes esgotados não podem ter o seu status modificado." });
-      }
-
-      await db("batches").where({ id }).update({
-        status,
-        updated_at: db.fn.now()
-      });
-
-      return reply.send({ message: `Status alterado para ${status} com sucesso.` });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return reply.status(400).send({ message: "Status repassado inválido.", errors: error.format() });
       }
       return reply.status(500).send({ message: "Erro de processamento interno." });
     }
