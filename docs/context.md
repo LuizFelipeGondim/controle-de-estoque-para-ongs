@@ -115,9 +115,10 @@ A tela principal do frontend é a página de login da **Área do Colaborador**. 
 
 - **Card glassmorphism** — container centralizado com backdrop blur, borda sutil e linha de acento gradiente no topo.
 - **Identidade visual** — logo 🌱 ONGConecta, badge pulsante "Área do Colaborador".
-- **Campo Nome do colaborador** — input de texto com ícone e foco estilizado.
+- **Campo E-mail** — input de e-mail integrado e estilizado.
 - **Campo Senha** — input de senha com botão de mostrar/ocultar (👁️ / 🙈).
-- **Botão Entrar** — ativo, navega para a página de visão geral dos estoques (`StockOverview`).
+- **Botão Entrar** — ativo, com feedback de carregamento, realiza requisição `POST` com Fetch API para a URL base do backend (na porta `3333` via `/auth/login`) para validar as credenciais. Navega para a página de visão geral dos estoques (`StockOverview`) em caso de sucesso.
+- **Tratamento de Erros** — exibe mensagens para falha de conexão e credenciais incorretas (erro 404/CORS devido a ausência da rota tratada, agora corrigido no app Fastify).
 - **Fundo animado** — dois orbs com gradiente em movimento suave (`orb-drift`).
 - **Responsivo** — layout adaptado para telas menores que 500px.
 
@@ -146,8 +147,8 @@ Dois cards de métrica de impacto social:
 
 > Todos os dados são mock estáticos, aguardando integração com o backend.
 
-### Sistema de Estoque (em desenvolvimento)
-As funcionalidades de autenticação real, CRUD de itens, controle de entradas/saídas, alertas e dashboard estão planejadas no backlog e serão implementadas nas próximas iterações.
+### Sistema de Autenticação e Backend (em integração)
+O roteamento de login agora possui conexão real ao backend usando e-mail e senha. As demais funcionalidades de controle de estoque e dashboard ainda utilizam mock estáticos e constam no backlog para implementação iminente.
 
 ---
 
