@@ -36,6 +36,15 @@ export default function ItemsPage({ onBack }) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
+  // ====== Form / Modal States ======
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [formData, setFormData] = useState({
+    name: '', category: 'outros', unit_of_measure: 'unidade',
+    min_stock_level: 0, is_essential: false, nutritional_info: ''
+  })
+  const [formLoading, setFormLoading] = useState(false)
+  const [formError, setFormError] = useState(null)
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -62,6 +71,49 @@ export default function ItemsPage({ onBack }) {
 
     fetchData();
   }, [])
+
+  // ====== Handlers ======
+  const handleInputChange = (e) => {
+    const { name, value, type, checked } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : type === 'number' ? Number(value) : value
+    }))
+  }
+
+  const handleAddItem = async (e) => {
+    e.preventDefault()
+    setFormLoading(true)
+    setFormError(null)
+
+    try {
+      const response = await fetch(`${API_URL}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ ...formData, conversion_factor: 1 })
+      })
+
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.message || 'Erro ao cadastrar novo item.')
+      }
+
+      const newIdData = await response.json()
+      const newItem = { id: newIdData.id, ...formData, conversion_factor: 1 }
+      
+      setItems(prev => [...prev, newItem])
+      setIsModalOpen(false)
+      setFormData({
+        name: '', category: 'outros', unit_of_measure: 'unidade',
+        min_stock_level: 0, is_essential: false, nutritional_info: ''
+      })
+    } catch (err) {
+      setFormError(err.message)
+    } finally {
+      setFormLoading(false)
+    }
+  }
 
   // Group items by category
   const groupedItems = CATEGORY_ORDER.reduce((acc, cat) => {
@@ -91,8 +143,16 @@ export default function ItemsPage({ onBack }) {
       {/* ══ Main Content ══ */}
       <main className="items-main" role="main">
         <div className="items-page-header">
-          <p className="items-page-header__tag">Inventário Detalhado</p>
-          <h1 className="items-page-header__title">Todos os Itens</h1>
+          <div>
+            <p className="items-page-header__tag">Inventário Detalhado</p>
+            <h1 className="items-page-header__title">Todos os Itens</h1>
+          </div>
+          <button 
+            className="items-header__new-btn"
+            onClick={() => setIsModalOpen(true)}
+          >
+            ➕ Novo Item
+          </button>
         </div>
 
         {loading && <div className="items-loading">Carregando itens...</div>}
@@ -171,6 +231,91 @@ export default function ItemsPage({ onBack }) {
           )
         })}
       </main>
+
+      {/* ══ Modal Novo Item ══ */}
+      {isModalOpen && (
+        <div className="item-modal-overlay" onClick={() => setIsModalOpen(false)}>
+          <div className="item-modal-content" onClick={e => e.stopPropagation()}>
+            <header className="item-modal-content__header">
+              <h2>Cadastrar Novo Item</h2>
+              <button 
+                className="item-modal-content__close" 
+                onClick={() => setIsModalOpen(false)}
+                aria-label="Cerrar modal"
+              >
+                &times;
+              </button>
+            </header>
+
+            <form onSubmit={handleAddItem} className="item-modal-form">
+              {formError && <div className="item-modal-form__error">{formError}</div>}
+              
+              <div className="item-modal-form__group">
+                <label htmlFor="name">Nome do Alimento *</label>
+                <input 
+                  type="text" id="name" name="name" 
+                  required value={formData.name} onChange={handleInputChange} 
+                  placeholder="Ex: Arroz Agulhinha Tipo 1"
+                />
+              </div>
+
+              <div className="item-modal-form__row">
+                <div className="item-modal-form__group">
+                  <label htmlFor="category">Categoria *</label>
+                  <select id="category" name="category" value={formData.category} onChange={handleInputChange}>
+                    {CATEGORY_ORDER.map(cat => (
+                      <option key={cat} value={cat}>{CATEGORY_EMOJIS[cat]} {cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="item-modal-form__group">
+                  <label htmlFor="unit_of_measure">Unidade de Medida *</label>
+                  <select id="unit_of_measure" name="unit_of_measure" value={formData.unit_of_measure} onChange={handleInputChange}>
+                    <option value="kg">Quilogramas (kg)</option>
+                    <option value="litro">Litros (L)</option>
+                    <option value="unidade">Unidades</option>
+                    <option value="caixa">Caixas</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="item-modal-form__row">
+                <div className="item-modal-form__group">
+                  <label htmlFor="min_stock_level">Estoque Mínimo *</label>
+                  <input 
+                    type="number" id="min_stock_level" name="min_stock_level" min="0" step="0.1"
+                    required value={formData.min_stock_level} onChange={handleInputChange} 
+                  />
+                </div>
+
+                <div className="item-modal-form__group item-modal-form__group--checkbox">
+                  <label className="checkbox-label" style={{marginTop: 'auto'}}>
+                    <input 
+                      type="checkbox" name="is_essential" 
+                      checked={formData.is_essential} onChange={handleInputChange} 
+                    />
+                    Item Essencial?
+                  </label>
+                </div>
+              </div>
+
+              <div className="item-modal-form__group">
+                <label htmlFor="nutritional_info">Informações Nutricionais (Opcional)</label>
+                <input 
+                  type="text" id="nutritional_info" name="nutritional_info" 
+                  value={formData.nutritional_info} onChange={handleInputChange} 
+                  placeholder="Ex: Rico em ferro"
+                />
+              </div>
+
+              <button type="submit" className="item-modal-form__submit" disabled={formLoading}>
+                {formLoading ? 'Salvando...' : 'Salvar Item'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
