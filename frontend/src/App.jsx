@@ -2,7 +2,6 @@ import { useState } from 'react'
 import LoginPage from './LoginPage'
 import StockOverview from './StockOverview'
 import ItemsPage from './ItemsPage'
-import AddBatchPage from './AddBatchPage'
 import BatchesPage from './BatchesPage'
 
 export default function App() {
@@ -13,16 +12,11 @@ export default function App() {
       onLogout={() => setPage('login')} 
       onViewItems={() => setPage('items')} 
       onViewBatches={() => setPage('batches')}
-      onAddBatch={() => setPage('add-batch')}
     />
   }
 
   if (page === 'items') {
     return <ItemsPage onBack={() => setPage('stock')} />
-  }
-
-  if (page === 'add-batch') {
-    return <AddBatchPage onBack={() => setPage('stock')} />
   }
 
   if (page === 'batches') {

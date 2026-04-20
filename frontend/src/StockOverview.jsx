@@ -35,7 +35,7 @@ function daysLabel(days) {
 }
 
 /* ── Componente ── */
-export default function StockOverview({ onLogout, onViewItems, onViewBatches, onAddBatch }) {
+export default function StockOverview({ onLogout, onViewItems, onViewBatches }) {
   const lowStock = CATEGORIES.filter(c => c.kg < c.minKg)
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -78,13 +78,6 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
             </div>
             <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem'}}>
               <p className="so-page-header__date" aria-label="Data de hoje">{today}</p>
-              <button 
-                className="so-header__logout" 
-                style={{borderColor: 'var(--color-primary-light)', color: 'var(--color-primary-light)'}}
-                onClick={onAddBatch}
-              >
-                ➕ Entrada de Lote
-              </button>
             </div>
           </div>
 
