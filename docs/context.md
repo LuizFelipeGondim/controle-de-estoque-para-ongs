@@ -56,12 +56,14 @@ Um sistema web com autenticação de colaboradores que permite:
 | Vanilla CSS             | —        | Estilização                     |
 | ESLint                  | ^9.39.4  | Linting e qualidade de código   |
 
-### Backend *(planejado)*
-| Tecnologia   | Função                             |
-|--------------|------------------------------------|
-| Node.js      | Runtime JavaScript no servidor     |
-| TypeScript   | Tipagem estática                   |
-| Express      | Framework HTTP / Rotas da API      |
+### Backend (Integrado)
+| Tecnologia      | Função                             |
+|-----------------|------------------------------------|
+| Node.js         | Runtime JavaScript no servidor     |
+| Fastify         | Framework HTTP (Performance)       |
+| TypeScript      | Tipagem estática                   |
+| Better-Sqlite3  | Banco de dados local               |
+| Zod             | Validação de schemas               |
 
 ### Testes *(planejado)*
 - **Vitest** — cobertura de testes unitários no frontend e backend.
@@ -86,8 +88,8 @@ controle-de-estoque-para-ongs/
 │   │   ├── StockOverview.css   # Estilos da visão geral
 │   │   ├── ItemsPage.jsx       # Página de visualização de todos os itens do estoque
 │   │   ├── ItemsPage.css       # Estilos da página de itens
-│   │   ├── AddBatchPage.jsx    # Página de formulário para entrada de lotes
-│   │   ├── AddBatchPage.css    # Estilos do formulário de entrada
+│   │   ├── BatchesPage.jsx     # Gestão detalhada de lotes (visão agrupada por item)
+│   │   ├── BatchesPage.css     # Estilos premium (glassmorphism/cards) para lotes
 │   │   └── index.css           # Estilos globais e design tokens
 │   ├── index.html      # Entry point HTML
 │   ├── vite.config.js
@@ -103,11 +105,11 @@ controle-de-estoque-para-ongs/
 O projeto não utiliza React Router. A navegação é controlada por `useState` em `App.jsx`:
 
 ```text
-Login  →  [clica Entrar]  →  StockOverview  → [clica Ver todos os itens] → ItemsPage
-                                   ↓     ↘                                    ↓
-                             [clica Sair]  ↘[clica Entrada de Lote]    [clica Voltar]
-                                   ↓         ↘                                ↓
-                               Login          → AddBatchPage → [Voltar] → StockOverview
+Login  →  [clica Entrar]  →  StockOverview  → [clica Ver itens] → ItemsPage
+                                    ↓     ↘                       ↓ (Modal)
+                              [clica Sair]  ↘[clica Ver lotes] → BatchesPage
+                                    ↓                                ↑ (Modal)
+                                Login                           [Adicionar Lote]
 ```
 
 ---
@@ -152,18 +154,19 @@ Dois cards de métrica de impacto social:
 
 > A funcionalidade de Overview continua parcialmente com dados mock.
 
-### Página de Itens — `ItemsPage` (integrada ao backend)
-Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real (obtendo lotes atrelados via `GET /items` e `GET /batch` concomitantemente):
-- Utiliza cookies de sessão com segurança para acesso restrito.
-- Faz o agrupamento automático de acordo com categorias de alimentos.
-- Os cards individuais agora relatam a soma do estoque total ativamente alocado ao item.
-- Exibe uma lista expansiva visual das informações de identificação dos **Lotes Ativos** atrelados (Vencimento, Quantidade Restante e Data de Entrada).
+### Página de Itens — `ItemsPage` (concluída e integrada)
+Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real:
+- **Cadastro de Itens**: Inclui um botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`.
+- **Visão de Lotes por Card**: Cada card de item exibe a soma do estoque ativo e permite visualizar os detalhes dos lotes atrelados (vencimento, quantidade e entrada).
+- **Design de Tabela Integrada**: Agrupamento por categorias de alimentos direto no fluxo de visualização.
 
-### Página de Registro de Lotes — `AddBatchPage` (integrada ao backend)
-Acessível a partir do painel de Visão Geral pelo botão "➕ Entrada de Lote", possui um formulário seguro e interativo:
-- Preenche inteligentemente o campo de seleção de alimentos com dados reais da base de dados local (`GET /items` com middleware de sessão).
-- Dispara a alocação de novos lotes ao submeter dados formatados em protocolo ISO para consumo na API (`POST /batch`).
-- Retorna feedback visual instantâneo em linha com a estilização Glassmorphism.
+### Visualização de Lotes — `BatchesPage` (concluída e integrada)
+Página dedicada à gestão refinada das doações recebidas no estoque:
+- **Design Premium**: Visualização em grade de cards com efeitos **Glassmorphism** e animações de entrada.
+- **Agrupamento por Item**: Os lotes são agrupados automaticamente pelo nome do alimento, exibindo o saldo acumulado por tipo no cabeçalho de cada seção.
+- **Inteligência de Vencimento**: Indicadores de urgência para lotes que vencem em menos de 5 dias (barra de acento amarela e tag "Urgente") e lotes vencidos.
+- **Adição Integrada (Modal)**: O processo de "Adicionar Lote" foi movido para dentro desta página através de um modal flutuante, eliminando a necessidade de uma página separada.
+- **Ordenação Dinâmica**: Permite ordenar lotes por data de vencimento (asc/desc) e data de entrada (asc/desc) dentro de cada grupo.
 
 ### Sistema de Autenticação e Backend (Integrado)
 O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança na nuvem (CORS origens/credenciais) do sistema rodando sob o Fastify foram expandidas para assegurar uma interação completa com frontend de terceiros.

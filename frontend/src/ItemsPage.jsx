@@ -101,7 +101,7 @@ export default function ItemsPage({ onBack }) {
 
       const newIdData = await response.json()
       const newItem = { id: newIdData.id, ...formData, conversion_factor: 1 }
-      
+
       setItems(prev => [...prev, newItem])
       setIsModalOpen(false)
       setFormData({
@@ -147,11 +147,11 @@ export default function ItemsPage({ onBack }) {
             <p className="items-page-header__tag">Inventário Detalhado</p>
             <h1 className="items-page-header__title">Todos os Itens</h1>
           </div>
-          <button 
+          <button
             className="items-header__new-btn"
             onClick={() => setIsModalOpen(true)}
           >
-            ➕ Novo Item
+            Novo Item
           </button>
         </div>
 
@@ -238,8 +238,8 @@ export default function ItemsPage({ onBack }) {
           <div className="item-modal-content" onClick={e => e.stopPropagation()}>
             <header className="item-modal-content__header">
               <h2>Cadastrar Novo Item</h2>
-              <button 
-                className="item-modal-content__close" 
+              <button
+                className="item-modal-content__close"
                 onClick={() => setIsModalOpen(false)}
                 aria-label="Cerrar modal"
               >
@@ -249,12 +249,12 @@ export default function ItemsPage({ onBack }) {
 
             <form onSubmit={handleAddItem} className="item-modal-form">
               {formError && <div className="item-modal-form__error">{formError}</div>}
-              
+
               <div className="item-modal-form__group">
                 <label htmlFor="name">Nome do Alimento *</label>
-                <input 
-                  type="text" id="name" name="name" 
-                  required value={formData.name} onChange={handleInputChange} 
+                <input
+                  type="text" id="name" name="name"
+                  required value={formData.name} onChange={handleInputChange}
                   placeholder="Ex: Arroz Agulhinha Tipo 1"
                 />
               </div>
@@ -268,7 +268,7 @@ export default function ItemsPage({ onBack }) {
                     ))}
                   </select>
                 </div>
-                
+
                 <div className="item-modal-form__group">
                   <label htmlFor="unit_of_measure">Unidade de Medida *</label>
                   <select id="unit_of_measure" name="unit_of_measure" value={formData.unit_of_measure} onChange={handleInputChange}>
@@ -283,17 +283,17 @@ export default function ItemsPage({ onBack }) {
               <div className="item-modal-form__row">
                 <div className="item-modal-form__group">
                   <label htmlFor="min_stock_level">Estoque Mínimo *</label>
-                  <input 
+                  <input
                     type="number" id="min_stock_level" name="min_stock_level" min="0" step="0.1"
-                    required value={formData.min_stock_level} onChange={handleInputChange} 
+                    required value={formData.min_stock_level} onChange={handleInputChange}
                   />
                 </div>
 
                 <div className="item-modal-form__group item-modal-form__group--checkbox">
-                  <label className="checkbox-label" style={{marginTop: 'auto'}}>
-                    <input 
-                      type="checkbox" name="is_essential" 
-                      checked={formData.is_essential} onChange={handleInputChange} 
+                  <label className="checkbox-label" style={{ marginTop: 'auto' }}>
+                    <input
+                      type="checkbox" name="is_essential"
+                      checked={formData.is_essential} onChange={handleInputChange}
                     />
                     Item Essencial?
                   </label>
@@ -302,9 +302,9 @@ export default function ItemsPage({ onBack }) {
 
               <div className="item-modal-form__group">
                 <label htmlFor="nutritional_info">Informações Nutricionais (Opcional)</label>
-                <input 
-                  type="text" id="nutritional_info" name="nutritional_info" 
-                  value={formData.nutritional_info} onChange={handleInputChange} 
+                <input
+                  type="text" id="nutritional_info" name="nutritional_info"
+                  value={formData.nutritional_info} onChange={handleInputChange}
                   placeholder="Ex: Rico em ferro"
                 />
               </div>
