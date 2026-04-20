@@ -35,7 +35,7 @@ function daysLabel(days) {
 }
 
 /* ── Componente ── */
-export default function StockOverview({ onLogout, onViewItems, onAddBatch }) {
+export default function StockOverview({ onLogout, onViewItems, onViewBatches, onAddBatch }) {
   const lowStock = CATEGORIES.filter(c => c.kg < c.minKg)
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -155,13 +155,20 @@ export default function StockOverview({ onLogout, onViewItems, onAddBatch }) {
                 <p className="so-section__tag">Inventário atual</p>
                 <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
               </div>
-              <button 
-                className="so-header__logout" 
-                style={{marginBottom: '0.2rem'}}
-                onClick={onViewItems}
-              >
-                Ver todos os itens
-              </button>
+              <div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.2rem'}}>
+                <button 
+                  className="so-header__logout" 
+                  onClick={onViewBatches}
+                >
+                  Ver todos os lotes
+                </button>
+                <button 
+                  className="so-header__logout" 
+                  onClick={onViewItems}
+                >
+                  Ver todos os itens
+                </button>
+              </div>
             </div>
 
             <div className="so-categories-grid">

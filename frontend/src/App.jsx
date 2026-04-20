@@ -3,6 +3,7 @@ import LoginPage from './LoginPage'
 import StockOverview from './StockOverview'
 import ItemsPage from './ItemsPage'
 import AddBatchPage from './AddBatchPage'
+import BatchesPage from './BatchesPage'
 
 export default function App() {
   const [page, setPage] = useState('login')
@@ -11,6 +12,7 @@ export default function App() {
     return <StockOverview 
       onLogout={() => setPage('login')} 
       onViewItems={() => setPage('items')} 
+      onViewBatches={() => setPage('batches')}
       onAddBatch={() => setPage('add-batch')}
     />
   }
@@ -21,6 +23,10 @@ export default function App() {
 
   if (page === 'add-batch') {
     return <AddBatchPage onBack={() => setPage('stock')} />
+  }
+
+  if (page === 'batches') {
+    return <BatchesPage onBack={() => setPage('stock')} />
   }
 
   return <LoginPage onLogin={() => setPage('stock')} />
