@@ -224,7 +224,11 @@ export default function BatchesPage({ onBack }) {
           <div className="batches-groups-container">
             {groupedBatches.map(([itemName, itemBatches]) => {
               const firstBatch = itemBatches[0];
-              const totalQty = itemBatches.reduce((sum, b) => sum + (b.status !== 'esgotado' ? b.current_quantity : 0), 0);
+              const today = new Date();
+              const totalQty = itemBatches.reduce((sum, b) => {
+                const isExpired = new Date(b.expiration_date) < today;
+                return sum + (b.status !== 'esgotado' && !isExpired ? b.current_quantity : 0);
+              }, 0);
 
               return (
                 <section key={itemName} className="batch-item-group">
