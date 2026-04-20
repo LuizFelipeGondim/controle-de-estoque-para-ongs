@@ -86,6 +86,8 @@ controle-de-estoque-para-ongs/
 │   │   ├── StockOverview.css   # Estilos da visão geral
 │   │   ├── ItemsPage.jsx       # Página de visualização de todos os itens do estoque
 │   │   ├── ItemsPage.css       # Estilos da página de itens
+│   │   ├── AddBatchPage.jsx    # Página de formulário para entrada de lotes
+│   │   ├── AddBatchPage.css    # Estilos do formulário de entrada
 │   │   └── index.css           # Estilos globais e design tokens
 │   ├── index.html      # Entry point HTML
 │   ├── vite.config.js
@@ -102,10 +104,10 @@ O projeto não utiliza React Router. A navegação é controlada por `useState` 
 
 ```text
 Login  →  [clica Entrar]  →  StockOverview  → [clica Ver todos os itens] → ItemsPage
-                                   ↓                                          ↓
-                             [clica Sair]                               [clica Voltar]
-                                   ↓                                          ↓
-                               Login                                    StockOverview
+                                   ↓     ↘                                    ↓
+                             [clica Sair]  ↘[clica Entrada de Lote]    [clica Voltar]
+                                   ↓         ↘                                ↓
+                               Login          → AddBatchPage → [Voltar] → StockOverview
 ```
 
 ---
@@ -155,6 +157,12 @@ Acessível a partir do painel de Visão Geral, esta página lista todos os tipos
 - Utiliza cookies de sessão com segurança para acesso restrito.
 - Faz o agrupamento automático de acordo com todas as matrizes de produtos retornados pela API (ex: cereal, grão, enlatado).
 - Os cards individuais contém avisos de item essencial, níveis mínimos e unidade de contagem.
+
+### Página de Registro de Lotes — `AddBatchPage` (integrada ao backend)
+Acessível a partir do painel de Visão Geral pelo botão "➕ Entrada de Lote", possui um formulário seguro e interativo:
+- Preenche inteligentemente o campo de seleção de alimentos com dados reais da base de dados local (`GET /items` com middleware de sessão).
+- Dispara a alocação de novos lotes ao submeter dados formatados em protocolo ISO para consumo na API (`POST /batch`).
+- Retorna feedback visual instantâneo em linha com a estilização Glassmorphism.
 
 ### Sistema de Autenticação e Backend (Integrado)
 O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança na nuvem (CORS origens/credenciais) do sistema rodando sob o Fastify foram expandidas para assegurar uma interação completa com frontend de terceiros.
