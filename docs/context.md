@@ -84,6 +84,8 @@ controle-de-estoque-para-ongs/
 │   │   ├── LoginPage.css       # Estilos da página de login
 │   │   ├── StockOverview.jsx   # Página de visão geral dos estoques (placeholder)
 │   │   ├── StockOverview.css   # Estilos da visão geral
+│   │   ├── ItemsPage.jsx       # Página de visualização de todos os itens do estoque
+│   │   ├── ItemsPage.css       # Estilos da página de itens
 │   │   └── index.css           # Estilos globais e design tokens
 │   ├── index.html      # Entry point HTML
 │   ├── vite.config.js
@@ -98,12 +100,12 @@ controle-de-estoque-para-ongs/
 
 O projeto não utiliza React Router. A navegação é controlada por `useState` em `App.jsx`:
 
-```
-Login  →  [clica Entrar]  →  StockOverview
-                                   ↓
-                             [clica Sair]
-                                   ↓
-                               Login
+```text
+Login  →  [clica Entrar]  →  StockOverview  → [clica Ver todos os itens] → ItemsPage
+                                   ↓                                          ↓
+                             [clica Sair]                               [clica Voltar]
+                                   ↓                                          ↓
+                               Login                                    StockOverview
 ```
 
 ---
@@ -142,13 +144,20 @@ Grid de cards para cada categoria de alimento: Arroz, Feijão, Macarrão, Grãos
 
 **Seção 3 — 📊 Dashboard**
 Dois cards de métrica de impacto social:
-- *Doações realizadas* — total numérico acumulado.
+- *Doações realizadas* — total em kg acumulado.
 - *Alimentos recebidos* — total em kg acumulado.
+- *Tags de categorias* — exibindo as categorias dos alimentos recebidos ou doados.
 
-> Todos os dados são mock estáticos, aguardando integração com o backend.
+> A funcionalidade de Overview continua parcialmente com dados mock.
 
-### Sistema de Autenticação e Backend (em integração)
-O roteamento de login agora possui conexão real ao backend usando e-mail e senha. As demais funcionalidades de controle de estoque e dashboard ainda utilizam mock estáticos e constam no backlog para implementação iminente.
+### Página de Itens — `ItemsPage` (integrada ao backend)
+Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de uma requisição HTTP real ao endpoint `GET /items`:
+- Utiliza cookies de sessão com segurança para acesso restrito.
+- Faz o agrupamento automático de acordo com todas as matrizes de produtos retornados pela API (ex: cereal, grão, enlatado).
+- Os cards individuais contém avisos de item essencial, níveis mínimos e unidade de contagem.
+
+### Sistema de Autenticação e Backend (Integrado)
+O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança na nuvem (CORS origens/credenciais) do sistema rodando sob o Fastify foram expandidas para assegurar uma interação completa com frontend de terceiros.
 
 ---
 
