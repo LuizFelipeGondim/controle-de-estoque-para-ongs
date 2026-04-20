@@ -278,7 +278,22 @@
 .batch-card:hover {
   transform: translateY(-8px);
   border-color: var(--color-primary-light);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 15px 40px rgba(46, 160, 106, 0.2);
+}
+
+.batch-card--urgent:hover {
+  border-color: var(--color-accent);
+  box-shadow: 0 15px 40px rgba(245, 166, 35, 0.2);
+}
+
+.batch-card--expired:hover {
+  border-color: #ff4d4d;
+  box-shadow: 0 15px 40px rgba(255, 77, 77, 0.2);
+}
+
+.batch-card--esgotado:hover {
+  border-color: #8B949E;
+  box-shadow: 0 15px 40px rgba(139, 148, 158, 0.1);
 }
 
 .batch-card__accent-bar {

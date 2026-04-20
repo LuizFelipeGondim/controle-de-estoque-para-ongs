@@ -157,6 +157,7 @@ Dois cards de métrica de impacto social:
 ### Página de Itens — `ItemsPage` (concluída e integrada)
 Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real:
 - **Cadastro de Itens**: Inclui um botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`.
+- **Exclusão Segura**: Opção de remover itens diretamente da lista, com trava de segurança que bloqueia a remoção de alimentos que ainda possuam lotes vinculados.
 - **Visão de Lotes por Card**: Cada card de item exibe a soma do estoque ativo e permite visualizar os detalhes dos lotes atrelados (vencimento, quantidade e entrada).
 - **Design de Tabela Integrada**: Agrupamento por categorias de alimentos direto no fluxo de visualização.
 
@@ -165,11 +166,13 @@ Página dedicada à gestão refinada das doações recebidas no estoque:
 - **Design Premium**: Visualização em grade de cards com efeitos **Glassmorphism** e animações de entrada.
 - **Agrupamento por Item**: Os lotes são agrupados automaticamente pelo nome do alimento, exibindo o saldo acumulado por tipo no cabeçalho de cada seção.
 - **Inteligência de Vencimento**: Indicadores de urgência para lotes que vencem em menos de 5 dias (barra de acento amarela e tag "Urgente") e lotes vencidos.
-- **Adição Integrada (Modal)**: O processo de "Adicionar Lote" foi movido para dentro desta página através de um modal flutuante, eliminando a necessidade de uma página separada.
+- **Interação Dinâmica**: Efeitos de *hover* nos cards que alteram a cor da sombra e borda de acordo com o nível de urgência (verde, amarelo ou vermelho).
+- **Gestão de Lotes**: Inclusão de botão de exclusão em cada lote, com remoção instantânea do estado local e recálculo automático de saldos.
+- **Adição Integrada (Modal)**: O processo de "Adicionar Lote" foi movido para dentro desta página através de um modal flutuante.
 - **Ordenação Dinâmica**: Permite ordenar lotes por data de vencimento (asc/desc) e data de entrada (asc/desc) dentro de cada grupo.
 
 ### Sistema de Autenticação e Backend (Integrado)
-O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança na nuvem (CORS origens/credenciais) do sistema rodando sob o Fastify foram expandidas para assegurar uma interação completa com frontend de terceiros.
+O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança (CORS) foram expandidas para permitir explicitamente os métodos `GET`, `POST`, `PATCH`, `DELETE` e `OPTIONS`, assegurando a funcionalidade completa de gestão de dados.
 
 ---
 
