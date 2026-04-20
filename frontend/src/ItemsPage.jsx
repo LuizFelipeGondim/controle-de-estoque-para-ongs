@@ -32,22 +32,27 @@ const CATEGORY_ORDER = [
 
 export default function ItemsPage({ onBack }) {
   const [items, setItems] = useState([])
+  const [batches, setBatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    async function fetchItems() {
+    async function fetchData() {
       try {
-        const response = await fetch(`${API_URL}/items`, {
-          credentials: 'include'
-        });
-        
-        if (!response.ok) {
-          throw new Error('Falha ao buscar itens do backend.')
+        const [itemsRes, batchesRes] = await Promise.all([
+          fetch(`${API_URL}/items`, { credentials: 'include' }),
+          fetch(`${API_URL}/batch`, { credentials: 'include' })
+        ]);
+
+        if (!itemsRes.ok || !batchesRes.ok) {
+          throw new Error('Falha ao buscar dados do backend.')
         }
 
-        const data = await response.json();
-        setItems(data);
+        const itemsData = await itemsRes.json();
+        const batchesData = await batchesRes.json();
+
+        setItems(itemsData);
+        setBatches(batchesData);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -55,7 +60,7 @@ export default function ItemsPage({ onBack }) {
       }
     }
 
-    fetchItems();
+    fetchData();
   }, [])
 
   // Group items by category
@@ -91,7 +96,7 @@ export default function ItemsPage({ onBack }) {
         </div>
 
         {loading && <div className="items-loading">Carregando itens...</div>}
-        
+
         {error && <div className="items-error">{error}</div>}
 
         {!loading && !error && items.length === 0 && (
@@ -118,10 +123,46 @@ export default function ItemsPage({ onBack }) {
                       ) : null}
                     </div>
                     <div className="item-card__body">
+                      <p>Estoque Total: <span>{
+                        batches
+                          .filter(b => b.item_type_id === item.id && b.status !== 'esgotado')
+                          .reduce((sum, b) => sum + b.current_quantity, 0)
+                      } {item.unit_of_measure}</span></p>
                       <p>Mínimo: <span>{item.min_stock_level} {item.unit_of_measure}</span></p>
                       {item.nutritional_info && (
                         <p>Info: <span>{item.nutritional_info}</span></p>
                       )}
+
+                      <div className="item-card__batches">
+                        <h4 className="item-card__batches-title">Lotes Ativos</h4>
+                        {(() => {
+                          const itemBatches = batches.filter(b => b.item_type_id === item.id && b.status !== 'esgotado');
+                          if (itemBatches.length === 0) {
+                            return <p className="item-card__no-batches">Nenhum lote disponível.</p>;
+                          }
+                          return (
+                            <ul className="item-card__batch-list" role="list">
+                              {itemBatches.map(b => {
+                                const expDate = new Date(b.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+                                const entryDateRaw = b.entry_date;
+                                const entryDateStr = entryDateRaw ? new Date(entryDateRaw).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A';
+
+                                return (
+                                  <li key={b.id} className={`batch-item batch-item--${b.status}`}>
+                                    <div className="batch-info-main">
+                                      <span className="batch-qty">{b.current_quantity} {item.unit_of_measure}</span>
+                                      <span className="batch-exp">Venc: {expDate}</span>
+                                    </div>
+                                    <div className="batch-entry">
+                                      Entrada: {entryDateStr}
+                                    </div>
+                                  </li>
+                                )
+                              })}
+                            </ul>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
                 ))}

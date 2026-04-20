@@ -186,6 +186,82 @@
   color: var(--color-text-secondary);
 }
 
+.item-card__batches {
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px dashed var(--color-border);
+}
+
+.item-card__batches-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-xs);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.item-card__no-batches {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+.item-card__batch-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.batch-item {
+  display: flex;
+  flex-direction: column;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.5rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  gap: 0.3rem;
+}
+
+.batch-info-main {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.batch-entry {
+  font-size: 0.70rem;
+  color: var(--color-text-muted);
+  text-align: right;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  padding-top: 0.2rem;
+  margin-top: 0.2rem;
+}
+
+.batch-item--esgotado {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.batch-item--disponivel {
+  border-color: rgba(46, 160, 67, 0.2);
+}
+
+.batch-qty {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.batch-exp {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
 /* States */
 .items-loading, .items-empty, .items-error {
   text-align: center;
