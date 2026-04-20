@@ -413,114 +413,178 @@
 /* ================================================================
    SEÇÃO 3 — DASHBOARD
 ================================================================ */
-.so-dash-grid {
+/* ================================================================
+   SEÇÃO 3 — DASHBOARD (REESTRUTURADO)
+================================================================ */
+.so-dash-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-lg);
+  gap: var(--spacing-xl);
 }
 
-.so-metric-card {
-  position: relative;
-  overflow: hidden;
+.so-dash-card {
   background: var(--color-bg-card);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: var(--spacing-2xl);
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  gap: var(--spacing-xs);
+  overflow: hidden;
   transition: all var(--transition-base);
 }
 
-/* Acento superior */
-.so-metric-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
+.so-dash-card:hover {
+  border-color: var(--color-border-hover);
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
 }
 
-.so-metric-card--donations::before {
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+.so-dash-card__header {
+  padding: var(--spacing-xl);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.02);
 }
 
-.so-metric-card--received::before {
-  background: linear-gradient(90deg, var(--color-accent-dark), var(--color-accent-light));
+.so-dash-card__icon {
+  font-size: 2.2rem;
+  width: 56px;
+  height: 56px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.so-metric-card:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+.so-dash-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.so-metric-card--donations:hover {
-  border-color: rgba(46, 125, 82, 0.4);
-  box-shadow: var(--shadow-md), var(--shadow-glow);
-}
-
-.so-metric-card--received:hover {
-  border-color: rgba(245, 166, 35, 0.35);
-  box-shadow: var(--shadow-md), 0 0 28px rgba(245, 166, 35, 0.15);
-}
-
-.so-metric-card__icon {
-  font-size: 2.8rem;
-  margin-bottom: var(--spacing-sm);
-  line-height: 1;
-}
-
-.so-metric-card__value {
-  font-family: var(--font-serif);
-  font-size: clamp(2.2rem, 4vw, 3rem);
+.so-dash-card__title {
+  font-size: 0.85rem;
   font-weight: 700;
-  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-text-secondary);
+}
+
+.so-dash-card__total {
+  font-family: var(--font-serif);
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
   line-height: 1;
 }
 
-.so-metric-card--donations .so-metric-card__value {
-  background: linear-gradient(135deg, var(--color-primary-light), #6DD89A);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.so-metric-card--received .so-metric-card__value {
-  background: linear-gradient(135deg, var(--color-accent), var(--color-accent-light));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.so-metric-card__value span {
+.so-dash-card__total span {
   font-family: var(--font-sans);
-  font-size: 1.1rem;
-  font-weight: 600;
-}
-
-.so-metric-card__label {
-  font-size: 0.95rem;
-  font-weight: 600;
-  color: var(--color-text-primary);
-  margin-top: var(--spacing-sm);
-}
-
-.so-metric-card__sublabel {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
   color: var(--color-text-muted);
-  letter-spacing: 0.04em;
+}
+
+.so-dash-card--donations .so-dash-card__total {
+  color: var(--color-primary-light);
+}
+
+.so-dash-card--received .so-dash-card__total {
+  color: var(--color-warning);
+}
+
+.so-dash-card__content {
+  padding: var(--spacing-xl);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.so-dash-card__subtitle {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.so-dash-card__empty,
+.so-dash-card__loading {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  padding: var(--spacing-md) 0;
+}
+
+/* Gráfico de Impacto */
+.impact-chart {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.impact-chart__row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.impact-chart__label {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: 0.85rem;
+}
+
+.impact-chart__cat {
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.impact-chart__val {
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.impact-chart__val span {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+
+.impact-chart__bar-track {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.impact-chart__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.impact-chart__bar-fill--primary {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+  box-shadow: 0 0 12px rgba(46, 125, 82, 0.3);
+}
+
+.impact-chart__bar-fill--accent {
+  background: linear-gradient(90deg, var(--color-warning), #FFCC80);
+  box-shadow: 0 0 12px rgba(245, 166, 35, 0.3);
 }
 
 /* ================================================================
    RESPONSIVO
 ================================================================ */
-@media (max-width: 768px) {
-
+@media (max-width: 850px) {
   .so-alerts-grid,
-  .so-dash-grid {
+  .so-dash-container {
     grid-template-columns: 1fr;
   }
 }

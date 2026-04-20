@@ -130,29 +130,24 @@ A tela principal do frontend é a página de login da **Área do Colaborador**. 
 
 > A landing page institucional (Navbar, Hero, Stats, About, Values, Donation Banner, Footer) foi removida do fluxo principal e pode ser reintegrada futuramente como rota separada.
 
-### Visão Geral dos Estoques — `StockOverview` (concluída com dados mock)
-Página de destino após o login. Composta por três seções principais, com dados estáticos (mock) até a integração com o backend:
+### Visão Geral dos Estoques — `StockOverview` (concluída e integrada)
+Página de destino após o login. Composta por seções dinâmicas que fornecem inteligência operacional em tempo real:
 
 **Header fixo** — logo ONGConecta e botão "Sair" (retorna à tela de login).
 
 **Seção 1 — ⚠️ Avisos**
-Dois painéis lado a lado com alertas operacionais:
-- *Validade Próxima* — lista itens com vencimento iminente, com badge de urgência colorido: vermelho (≤ 3 dias), âmbar (≤ 7 dias), verde (≤ 15 dias).
-- *Estoque Crítico* — lista categorias abaixo da quantidade mínima configurada, exibindo o saldo atual vs. o mínimo esperado.
+Painéis automáticos que alertam sobre:
+- *Validade Próxima* — lista itens com vencimento iminente.
+- *Estoque Crítico* — lista categorias abaixo da quantidade mínima.
 
 **Seção 2 — 📦 Estoque por Categoria**
-Grid de cards para cada categoria de alimento: Arroz, Feijão, Macarrão, Grãos, Carne, Legume e Verdura. Cada card exibe:
-- Emoji identificador, nome e quantidade atual em kg.
-- Barra de progresso (verde = ok, vermelho = crítico).
-- Badge "Crítico" quando o estoque está abaixo do mínimo.
+Grid de cards que exibe o saldo atual em tempo real por tipo de alimento, com barras de progresso visuais.
 
-**Seção 3 — 📊 Dashboard**
-Dois cards de métrica de impacto social:
-- *Doações realizadas* — total em kg acumulado.
-- *Alimentos recebidos* — total em kg acumulado.
-- *Tags de categorias* — exibindo as categorias dos alimentos recebidos ou doados.
-
-> A funcionalidade de Overview continua parcialmente com dados mock.
+**Seção 3 — 📊 Dashboard de Performance Mensal (Integrado)**
+Dividido em duas áreas de análise de impacto social:
+- **Itens Recebidos**: Integrado ao backend (`GET /batch`), exibe o total em kg recebido no mês atual e um gráfico de barras com a distribuição por categoria (Real).
+- **Itens Doados**: Exibe o impacto de retiradas mensais com placeholders realistas, preparando a interface para a futura integração do módulo de doações.
+- **Gráficos de Impacto**: Componente visual customizado que mostra a proporção de alimentos por categoria através de barras horizontais animadas.
 
 ### Página de Itens — `ItemsPage` (concluída e integrada)
 Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real:

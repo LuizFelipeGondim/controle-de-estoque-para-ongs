@@ -1,3 +1,5 @@
+import { useState, useEffect } from 'react'
+import { API_URL } from './config/api'
 import './StockOverview.css'
 
 /* ── Dados mock — serão substituídos pela API ── */
@@ -17,9 +19,38 @@ const EXPIRING = [
   { name: 'Carne Bovina', category: 'Carne', daysLeft: 8, date: '25/04/2026' },
 ]
 
-const DASHBOARD = {
-  totalDonationsKg: 1247.5,
-  totalReceivedKg: 4830.5,
+const MOCK_DONATIONS = [
+  { category: 'Cestas Básicas', kg: 450 },
+  { category: 'Marmitas', kg: 320 },
+  { category: 'Higiene', kg: 120 },
+  { category: 'Grãos', kg: 85 },
+];
+
+/* Componente de Gráfico de Barras */
+function ImpactChart({ data, colorScheme = 'primary' }) {
+  const maxVal = Math.max(...data.map(d => d.kg), 1);
+
+  return (
+    <div className="impact-chart">
+      {data.map((item, i) => {
+        const pct = (item.kg / maxVal) * 100;
+        return (
+          <div key={i} className="impact-chart__row">
+            <div className="impact-chart__label">
+              <span className="impact-chart__cat">{item.category}</span>
+              <span className="impact-chart__val">{item.kg.toLocaleString('pt-BR')}<span> kg</span></span>
+            </div>
+            <div className="impact-chart__bar-track">
+              <div
+                className={`impact-chart__bar-fill impact-chart__bar-fill--${colorScheme}`}
+                style={{ width: `${pct}%`, transitionDelay: `${i * 100}ms` }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 /* Urgência da validade */
@@ -36,9 +67,53 @@ function daysLabel(days) {
 
 /* ── Componente ── */
 export default function StockOverview({ onLogout, onViewItems, onViewBatches }) {
+  const [receivedImpact, setReceivedImpact] = useState({ total: 0, byCategory: [] });
+  const [loadingDash, setLoadingDash] = useState(true);
+
   const lowStock = CATEGORIES.filter(c => c.kg < c.minKg)
 
-  const today = new Date().toLocaleDateString('pt-BR', {
+  useEffect(() => {
+    async function fetchDashboardData() {
+      try {
+        const response = await fetch(`${API_URL}/batch`, { credentials: 'include' });
+        if (!response.ok) throw new Error('Falha ao buscar dados do dashboard');
+
+        const batches = await response.json();
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        // Filtrar lotes do mês atual
+        const monthBatches = batches.filter(b => {
+          const date = new Date(b.created_at || b.received_at || Date.now());
+          return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        });
+
+        const total = monthBatches.reduce((sum, b) => sum + b.initial_quantity, 0);
+
+        // Agrupar por categoria
+        const grouped = monthBatches.reduce((acc, b) => {
+          const cat = b.item_category || 'Outros';
+          acc[cat] = (acc[cat] || 0) + b.initial_quantity;
+          return acc;
+        }, {});
+
+        const byCategory = Object.entries(grouped)
+          .map(([category, kg]) => ({ category, kg }))
+          .sort((a, b) => b.kg - a.kg);
+
+        setReceivedImpact({ total, byCategory });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoadingDash(false);
+      }
+    }
+
+    fetchDashboardData();
+  }, []);
+
+  const todayStr = new Date().toLocaleDateString('pt-BR', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -76,8 +151,8 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
               <p className="so-page-header__tag">Bem-vindo de volta</p>
               <h1 className="so-page-header__title">Visão Geral dos Estoques</h1>
             </div>
-            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem'}}>
-              <p className="so-page-header__date" aria-label="Data de hoje">{today}</p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
+              <p className="so-page-header__date" aria-label="Data de hoje">{todayStr}</p>
             </div>
           </div>
 
@@ -143,20 +218,20 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
 
           {/* ══ Seção 2 — Estoque por Categoria ══ */}
           <section className="so-section" id="estoque" aria-labelledby="estoque-titulo">
-            <div className="so-section__head" style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem'}}>
+            <div className="so-section__head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
                 <p className="so-section__tag">Inventário atual</p>
                 <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
               </div>
-              <div style={{display: 'flex', gap: '0.5rem', marginBottom: '0.2rem'}}>
-                <button 
-                  className="so-header__logout" 
+              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                <button
+                  className="so-header__logout"
                   onClick={onViewBatches}
                 >
                   Ver todos os lotes
                 </button>
-                <button 
-                  className="so-header__logout" 
+                <button
+                  className="so-header__logout"
                   onClick={onViewItems}
                 >
                   Ver todos os itens
@@ -204,29 +279,51 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
           {/* ══ Seção 3 — Dashboard ══ */}
           <section className="so-section" id="dashboard" aria-labelledby="dash-titulo">
             <div className="so-section__head">
-              <p className="so-section__tag">Impacto social</p>
-              <h2 id="dash-titulo" className="so-section__title">📊 Dashboard</h2>
+              <p className="so-section__tag">Impacto do mês atual</p>
+              <h2 id="dash-titulo" className="so-section__title">📊 Dashboard Mensal</h2>
             </div>
 
-            <div className="so-dash-grid">
-              <div className="so-metric-card so-metric-card--donations">
-                <div className="so-metric-card__icon" aria-hidden="true">🤝</div>
-                <div className="so-metric-card__value">
-                  {DASHBOARD.totalDonationsKg.toLocaleString('pt-BR')}
-                  <span> kg</span>
+            <div className="so-dash-container">
+              {/* Subseção: Doações Realizadas (Mock) */}
+              <div className="so-dash-card so-dash-card--donations">
+                <div className="so-dash-card__header">
+                  <div className="so-dash-card__icon">🤝</div>
+                  <div className="so-dash-card__info">
+                    <h3 className="so-dash-card__title">Itens Doados</h3>
+                    <div className="so-dash-card__total">
+                      {(975).toLocaleString('pt-BR')}<span> kg</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="so-metric-card__label">Doações realizadas</div>
-                <div className="so-metric-card__sublabel">Total acumulado</div>
+                <div className="so-dash-card__content">
+                  <p className="so-dash-card__subtitle">Distribuição por categoria (Mock)</p>
+                  <ImpactChart data={MOCK_DONATIONS} colorScheme="primary" />
+                </div>
               </div>
 
-              <div className="so-metric-card so-metric-card--received">
-                <div className="so-metric-card__icon" aria-hidden="true">📦</div>
-                <div className="so-metric-card__value">
-                  {DASHBOARD.totalReceivedKg.toLocaleString('pt-BR')}
-                  <span> kg</span>
+              {/* Subseção: Itens Recebidos (Real) */}
+              <div className="so-dash-card so-dash-card--received">
+                <div className="so-dash-card__header">
+                  <div className="so-dash-card__icon">📦</div>
+                  <div className="so-dash-card__info">
+                    <h3 className="so-dash-card__title">Itens Recebidos</h3>
+                    <div className="so-dash-card__total">
+                      {receivedImpact.total.toLocaleString('pt-BR')}<span> kg</span>
+                    </div>
+                  </div>
                 </div>
-                <div className="so-metric-card__label">Alimentos recebidos</div>
-                <div className="so-metric-card__sublabel">Total acumulado</div>
+                <div className="so-dash-card__content">
+                  {loadingDash ? (
+                    <div className="so-dash-card__loading">Carregando dados...</div>
+                  ) : receivedImpact.byCategory.length > 0 ? (
+                    <>
+                      <p className="so-dash-card__subtitle">Distribuição por categoria</p>
+                      <ImpactChart data={receivedImpact.byCategory} colorScheme="accent" />
+                    </>
+                  ) : (
+                    <p className="so-dash-card__empty">Nenhuma entrada registrada este mês.</p>
+                  )}
+                </div>
               </div>
             </div>
           </section>
