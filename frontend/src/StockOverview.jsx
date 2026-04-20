@@ -126,15 +126,14 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
           const catItems = itemTotals.filter(i => i.category === catName);
           const totalKg = catItems.reduce((sum, i) => sum + i.totalKg, 0);
           const minKg = catItems.reduce((sum, i) => sum + i.min_stock_level, 0);
-          
+
           if (catItems.length === 0 && totalKg === 0) return null;
 
           return {
             name: catName,
             emoji: CATEGORY_EMOJIS[catName] || "📦",
             kg: totalKg,
-            minKg: minKg || 10,
-            maxKg: Math.max(totalKg * 1.5, minKg * 2, 50)
+            minKg: minKg || 0
           };
         }).filter(Boolean);
 
@@ -304,7 +303,7 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
             </div>
 
             {loading ? (
-               <div className="so-dash-card__loading">Calculando saldos por categoria...</div>
+              <div className="so-dash-card__loading">Calculando saldos por categoria...</div>
             ) : (
               <div className="so-categories-grid">
                 {categoryStats.map((cat, i) => {
@@ -322,19 +321,6 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
                       <div className="so-cat-card__name">{cat.name}</div>
                       <div className="so-cat-card__kg">
                         {cat.kg.toFixed(1)}<span> kg</span>
-                      </div>
-                      <div
-                        className="so-cat-card__bar-track"
-                        role="progressbar"
-                        aria-valuenow={cat.kg}
-                        aria-valuemin={0}
-                        aria-valuemax={cat.maxKg}
-                        aria-label={`${cat.name}: ${cat.kg} de ${cat.maxKg} kg`}
-                      >
-                        <div
-                          className={`so-cat-card__bar-fill${isCritical ? ' so-cat-card__bar-fill--critical' : ''}`}
-                          style={{ width: `${pct}%` }}
-                        />
                       </div>
                       <div className="so-cat-card__min">Mín: {cat.minKg} kg</div>
                     </div>
