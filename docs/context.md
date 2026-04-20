@@ -153,10 +153,11 @@ Dois cards de métrica de impacto social:
 > A funcionalidade de Overview continua parcialmente com dados mock.
 
 ### Página de Itens — `ItemsPage` (integrada ao backend)
-Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de uma requisição HTTP real ao endpoint `GET /items`:
+Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real (obtendo lotes atrelados via `GET /items` e `GET /batch` concomitantemente):
 - Utiliza cookies de sessão com segurança para acesso restrito.
-- Faz o agrupamento automático de acordo com todas as matrizes de produtos retornados pela API (ex: cereal, grão, enlatado).
-- Os cards individuais contém avisos de item essencial, níveis mínimos e unidade de contagem.
+- Faz o agrupamento automático de acordo com categorias de alimentos.
+- Os cards individuais agora relatam a soma do estoque total ativamente alocado ao item.
+- Exibe uma lista expansiva visual das informações de identificação dos **Lotes Ativos** atrelados (Vencimento, Quantidade Restante e Data de Entrada).
 
 ### Página de Registro de Lotes — `AddBatchPage` (integrada ao backend)
 Acessível a partir do painel de Visão Geral pelo botão "➕ Entrada de Lote", possui um formulário seguro e interativo:
