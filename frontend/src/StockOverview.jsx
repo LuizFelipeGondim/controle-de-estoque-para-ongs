@@ -35,7 +35,7 @@ function daysLabel(days) {
 }
 
 /* ── Componente ── */
-export default function StockOverview({ onLogout, onViewItems }) {
+export default function StockOverview({ onLogout, onViewItems, onAddBatch }) {
   const lowStock = CATEGORIES.filter(c => c.kg < c.minKg)
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -76,7 +76,16 @@ export default function StockOverview({ onLogout, onViewItems }) {
               <p className="so-page-header__tag">Bem-vindo de volta</p>
               <h1 className="so-page-header__title">Visão Geral dos Estoques</h1>
             </div>
-            <p className="so-page-header__date" aria-label="Data de hoje">{today}</p>
+            <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem'}}>
+              <p className="so-page-header__date" aria-label="Data de hoje">{today}</p>
+              <button 
+                className="so-header__logout" 
+                style={{borderColor: 'var(--color-primary-light)', color: 'var(--color-primary-light)'}}
+                onClick={onAddBatch}
+              >
+                ➕ Entrada de Lote
+              </button>
+            </div>
           </div>
 
           {/* ══ Seção 1 — Avisos ══ */}
