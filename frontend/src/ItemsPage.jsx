@@ -44,6 +44,7 @@ export default function ItemsPage({ onBack }) {
   })
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState(null)
+  const [actionError, setActionError] = useState(null)
 
   useEffect(() => {
     async function fetchData() {
@@ -115,6 +116,33 @@ export default function ItemsPage({ onBack }) {
     }
   }
 
+  const handleDeleteItem = async (itemId) => {
+    setActionError(null)
+    
+    if (!window.confirm("Você tem certeza que deseja excluir este alimento do inventário?")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/items/${itemId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (response.status === 204) {
+        setItems(prev => prev.filter(item => item.id !== itemId))
+      } else if (response.status === 409) {
+        const data = await response.json().catch(() => ({}))
+        setActionError(data.message || "Este item não pode ser excluído pois ainda possui lotes vinculados.")
+      } else {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || "Erro ao tentar excluir o item.")
+      }
+    } catch (err) {
+      setActionError(err.message)
+    }
+  }
+
   // Group items by category
   const groupedItems = CATEGORY_ORDER.reduce((acc, cat) => {
     acc[cat] = items.filter(item => item.category === cat)
@@ -159,6 +187,12 @@ export default function ItemsPage({ onBack }) {
 
         {error && <div className="items-error">{error}</div>}
 
+        {actionError && (
+          <div className="items-action-error" onClick={() => setActionError(null)}>
+            <span>⚠️</span> {actionError} (clique para fechar)
+          </div>
+        )}
+
         {!loading && !error && items.length === 0 && (
           <div className="items-empty">Nenhum item encontrado.</div>
         )}
@@ -177,10 +211,19 @@ export default function ItemsPage({ onBack }) {
                 {catItems.map(item => (
                   <div key={item.id} className="item-card">
                     <div className="item-card__header">
-                      <h3 className="item-card__name">{item.name}</h3>
-                      {item.is_essential ? (
-                        <span className="item-card__badge" aria-label="Item essencial">Essencial</span>
-                      ) : null}
+                      <div className="item-card__title-box">
+                        <h3 className="item-card__name">{item.name}</h3>
+                        {item.is_essential ? (
+                          <span className="item-card__badge" aria-label="Item essencial">Essencial</span>
+                        ) : null}
+                      </div>
+                      <button 
+                        className="item-card__delete-btn" 
+                        onClick={() => handleDeleteItem(item.id)}
+                        title="Remover Item"
+                      >
+                        &times;
+                      </button>
                     </div>
                     <div className="item-card__body">
                       <p>Estoque Total: <span>{
