@@ -15,6 +15,7 @@ export default function BatchesPage({ onBack }) {
   const [expirationDate, setExpirationDate] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [formError, setFormError] = useState(null)
+  const [actionError, setActionError] = useState(null)
 
   // order options: 'exp_asc', 'exp_desc', 'entry_desc', 'entry_asc'
   const [sortOption, setSortOption] = useState('exp_asc')
@@ -100,6 +101,34 @@ export default function BatchesPage({ onBack }) {
     }
   }
 
+  const handleDelete = async (batchId) => {
+    setActionError(null)
+
+    if (!window.confirm("Você tem certeza que deseja excluir este lote? Esta ação não pode ser desfeita.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`${API_URL}/batch/${batchId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      })
+
+      if (response.status === 204) {
+        // Sucesso brutal - remover do estado local
+        setBatches(prev => prev.filter(b => b.id !== batchId))
+      } else if (response.status === 409) {
+        const data = await response.json().catch(() => ({}))
+        setActionError(data.message || "Este lote não pode ser deletado pois já possui doações vinculadas.")
+      } else {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data.message || "Erro ao tentar excluir o lote.")
+      }
+    } catch (err) {
+      setActionError(err.message)
+    }
+  }
+
   const groupedBatches = useMemo(() => {
     const sorted = [...batches].sort((a, b) => {
       const dateA = new Date(a.expiration_date).getTime()
@@ -181,6 +210,12 @@ export default function BatchesPage({ onBack }) {
 
         {error && <div className="batches-error">{error}</div>}
 
+        {actionError && (
+          <div className="batches-action-error" onClick={() => setActionError(null)}>
+            <span>⚠️</span> {actionError} (clique para fechar)
+          </div>
+        )}
+
         {!loading && !error && batches.length === 0 && (
           <div className="batches-empty">Nenhum lote registrado.</div>
         )}
@@ -225,6 +260,14 @@ export default function BatchesPage({ onBack }) {
                               <span className="pulse-dot"></span>
                               {statusLabel}
                             </span>
+                            <button
+                              className="batch-card__delete-btn"
+                              onClick={() => handleDelete(batch.id)}
+                              title="Remover Lote"
+                              aria-label={`Remover lote do alimento ${batch.item_name}`}
+                            >
+                              &times;
+                            </button>
                           </div>
 
                           <div className="batch-card__content">
