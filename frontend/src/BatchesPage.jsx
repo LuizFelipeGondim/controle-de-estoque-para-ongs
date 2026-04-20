@@ -130,30 +130,33 @@ export default function BatchesPage({ onBack }) {
   }
 
   const groupedBatches = useMemo(() => {
+    // 1. Sort all batches by entry date (newest first)
     const sorted = [...batches].sort((a, b) => {
-      const dateA = new Date(a.expiration_date).getTime()
-      const dateB = new Date(b.expiration_date).getTime()
       const entryA = new Date(a.entry_date || a.created_at || 0).getTime()
       const entryB = new Date(b.entry_date || b.created_at || 0).getTime()
-
-      if (sortOption === 'exp_asc') return dateA - dateB
-      if (sortOption === 'exp_desc') return dateB - dateA
-      if (sortOption === 'entry_desc') return entryB - entryA
-      if (sortOption === 'entry_asc') return entryA - entryB
-      return 0
+      return entryB - entryA || a.item_name.localeCompare(b.item_name)
     })
 
-    // Grouping by item_name
+    // 2. Group by date string (YYYY-MM-DD)
     const groups = sorted.reduce((acc, batch) => {
-      const key = batch.item_name
-      if (!acc[key]) acc[key] = []
-      acc[key].push(batch)
+      const dateObj = new Date(batch.entry_date || batch.created_at)
+      const dateKey = dateObj.toISOString().split('T')[0] // "2026-04-20"
+      
+      if (!acc[dateKey]) acc[dateKey] = []
+      acc[dateKey].push(batch)
       return acc
     }, {})
 
-    // Sort groups alphabetically by item name
-    return Object.entries(groups).sort(([nameA], [nameB]) => nameA.localeCompare(nameB))
-  }, [batches, sortOption])
+    // 3. Convert to array and sort groups by date descending
+    return Object.entries(groups).sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
+  }, [batches])
+
+  const formatDateDesc = (dateIso) => {
+    const date = new Date(dateIso + 'T12:00:00') // Avoid timezone shifts
+    const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }
+    const formatted = date.toLocaleDateString('pt-BR', options)
+    return formatted.charAt(0).toUpperCase() + formatted.slice(1)
+  }
 
   return (
     <div className="batches-page">
@@ -189,21 +192,8 @@ export default function BatchesPage({ onBack }) {
           </button>
         </div>
 
-        <div className="batches-sort-control-container">
-
-          <div className="batches-sort-control">
-            <label htmlFor="sortSelect">Ordenar por:</label>
-            <select
-              id="sortSelect"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value)}
-            >
-              <option value="exp_asc">Validade (Mais próximos)</option>
-              <option value="exp_desc">Validade (Mais distantes)</option>
-              <option value="entry_desc">Entrada (Mais recentes)</option>
-              <option value="entry_asc">Entrada (Mais antigos)</option>
-            </select>
-          </div>
+        <div className="batches-sort-info">
+          <p>Lotes agrupados por data de entrada no estoque</p>
         </div>
 
         {loading && <div className="batches-loading">Carregando lotes...</div>}
@@ -221,92 +211,80 @@ export default function BatchesPage({ onBack }) {
         )}
 
         {!loading && !error && groupedBatches.length > 0 && (
-          <div className="batches-groups-container">
-            {groupedBatches.map(([itemName, itemBatches]) => {
-              const firstBatch = itemBatches[0];
-              const today = new Date();
-              const totalQty = itemBatches.reduce((sum, b) => {
-                const isExpired = new Date(b.expiration_date) < today;
-                return sum + (b.status !== 'esgotado' && !isExpired ? b.current_quantity : 0);
-              }, 0);
+          <div className="batches-list-container">
+            {groupedBatches.map(([dateKey, itemsInDate]) => {
+              const totalQtyInDay = itemsInDate.reduce((sum, b) => sum + b.initial_quantity, 0)
 
               return (
-                <section key={itemName} className="batch-item-group">
-                  <header className="batch-item-group__header">
-                    <div className="batch-item-group__title-box">
-                      <h2 className="batch-item-group__title">{itemName}</h2>
-                      <span className="batch-item-group__category">{firstBatch.item_category}</span>
+                <section key={dateKey} className="batch-date-group">
+                  <header className="batch-date-group__header">
+                    <div className="batch-date-group__info">
+                      <span className="batch-date-group__icon">📥</span>
+                      <h2 className="batch-date-group__title">{formatDateDesc(dateKey)}</h2>
                     </div>
-                    <div className="batch-item-group__summary">
-                      <span className="summary-label">Estoque Total Ativo:</span>
-                      <span className="summary-value">{totalQty.toFixed(1)} <span>{firstBatch.item_unit_of_measure}</span></span>
+                    <div className="batch-date-group__summary">
+                      Recebidos: <strong>{totalQtyInDay.toFixed(1)} kg</strong>
                     </div>
                   </header>
 
-                  <div className="batches-grid">
-                    {itemBatches.map(batch => {
-                      const expDate = new Date(batch.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-                      const entryRaw = batch.entry_date || batch.created_at
-                      const entryDate = entryRaw ? new Date(entryRaw).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'
-                      const today = new Date();
-                      const expTime = new Date(batch.expiration_date);
-                      const diffTime = expTime - today;
-                      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                      const isUrgent = batch.status !== 'esgotado' && diffDays <= 5 && diffDays >= 0;
-                      const isExpired = batch.status !== 'esgotado' && diffDays < 0;
+                  <div className="batches-table">
+                    <div className="batches-table__head">
+                      <div className="col-item">Alimento</div>
+                      <div className="col-cat">Categoria</div>
+                      <div className="col-qty">Quantidade</div>
+                      <div className="col-exp">Validade</div>
+                      <div className="col-status">Status</div>
+                      <div className="col-actions"></div>
+                    </div>
 
-                      const statusLabel = batch.status === 'esgotado' ? 'Esgotado' : (isExpired ? 'Vencido' : 'Disponível');
-                      const badgeStatusClass = batch.status === 'esgotado' ? 'esgotado' : (isExpired ? 'vencido' : 'disponivel');
+                    <div className="batches-table__body">
+                      {itemsInDate.map(batch => {
+                        const expDate = new Date(batch.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+                        const today = new Date();
+                        const expTime = new Date(batch.expiration_date);
+                        const diffTime = expTime - today;
+                        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                        const isUrgent = batch.status !== 'esgotado' && diffDays <= 5 && diffDays >= 0;
+                        const isExpired = batch.status !== 'esgotado' && diffDays < 0;
 
-                      return (
-                        <div key={batch.id} className={`batch-card batch-card--${batch.status} ${isUrgent ? 'batch-card--urgent' : ''} ${isExpired ? 'batch-card--expired' : ''}`}>
-                          <div className="batch-card__header">
-                            <span className={`batch-status-badge batch-status-badge--${badgeStatusClass}`}>
-                              <span className="pulse-dot"></span>
-                              {statusLabel}
-                            </span>
-                            <button
-                              className="batch-card__delete-btn"
-                              onClick={() => handleDelete(batch.id)}
-                              title="Remover Lote"
-                              aria-label={`Remover lote do alimento ${batch.item_name}`}
-                            >
-                              &times;
-                            </button>
-                          </div>
+                        const statusLabel = batch.status === 'esgotado' ? 'Esgotado' : (isExpired ? 'Vencido' : 'Disponível');
+                        const badgeStatusClass = batch.status === 'esgotado' ? 'esgotado' : (isExpired ? 'vencido' : 'disponivel');
 
-                          <div className="batch-card__content">
-                            <div className="batch-card__metrics">
-                              <div className="batch-card__qty">
-                                <span className="metric-value">{batch.current_quantity} <span>{batch.item_unit_of_measure}</span></span>
-                              </div>
+                        return (
+                          <div key={batch.id} className={`batch-row batch-row--${badgeStatusClass}`}>
+                            <div className="col-item">
+                              <span className="item-name-primary">{batch.item_name}</span>
                             </div>
-
-                            <div className="batch-card__dates">
-                              <div className="batch-date">
-                                <span className="date-icon">🗓️</span>
-                                <div className="date-details">
-                                  <span className="date-label">Validade</span>
-                                  <span className={`date-value ${isUrgent || isExpired ? 'date-value--warning' : ''}`}>
-                                    {expDate}
-                                    {(isUrgent || isExpired) && <span className="warning-tag">{isExpired ? 'Vencido' : 'Urgente'}</span>}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="batch-date">
-                                <span className="date-icon">📥</span>
-                                <div className="date-details">
-                                  <span className="date-label">Entrada</span>
-                                  <span className="date-value">{entryDate}</span>
-                                </div>
-                              </div>
+                            <div className="col-cat">
+                              <span className="cat-tag">{batch.item_category}</span>
+                            </div>
+                            <div className="col-qty">
+                              <span className="qty-val">{batch.current_quantity.toFixed(1)}</span>
+                              <span className="qty-unit">{batch.item_unit_of_measure}</span>
+                            </div>
+                            <div className="col-exp">
+                              <span className="exp-val">
+                                {expDate}
+                              </span>
+                            </div>
+                            <div className="col-status">
+                              <span className={`status-pill status-pill--${badgeStatusClass}`}>
+                                {statusLabel}
+                              </span>
+                            </div>
+                            <div className="col-actions">
+                              <button
+                                className="batch-row__delete"
+                                onClick={() => handleDelete(batch.id)}
+                                aria-label="Excluir lote"
+                              >
+                                &times;
+                              </button>
                             </div>
                           </div>
-
-                          <div className="batch-card__accent-bar"></div>
-                        </div>
-                      )
-                    })}
+                        )
+                      })}
+                    </div>
                   </div>
                 </section>
               )
