@@ -9,7 +9,10 @@ import { donationPacketRoutes } from "./routes/donation-packets.js";
 
 export const app = fastify();
 
-app.register(cors);
+app.register(cors, {
+  origin: true,
+  credentials: true,
+});
 app.register(cookie);
 
 // Registro modular das rotas
