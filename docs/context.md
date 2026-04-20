@@ -158,7 +158,8 @@ Dois cards de métrica de impacto social:
 Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real:
 - **Cadastro de Itens**: Inclui um botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`.
 - **Exclusão Segura**: Opção de remover itens diretamente da lista, com trava de segurança que bloqueia a remoção de alimentos que ainda possuam lotes vinculados.
-- **Visão de Lotes por Card**: Cada card de item exibe a soma do estoque ativo e permite visualizar os detalhes dos lotes atrelados (vencimento, quantidade e entrada).
+- **Organização por Validade**: Cada card de item separa os lotes atrelados em duas seções ("Lotes Ativos" e "Lotes Vencidos ⚠️"), destacando visualmente itens expirados.
+- **Cálculo de Estoque Real**: O saldo total exibido nos cards contabiliza apenas as quantidades dos lotes que estão dentro do prazo de validade.
 - **Design de Tabela Integrada**: Agrupamento por categorias de alimentos direto no fluxo de visualização.
 
 ### Visualização de Lotes — `BatchesPage` (concluída e integrada)

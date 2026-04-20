@@ -30,6 +30,25 @@ const CATEGORY_ORDER = [
   "outros"
 ]
 
+// Helper component for batch items
+function BatchItem({ b, unit, isExpired }) {
+  const expDate = new Date(b.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
+  const entryDateRaw = b.entry_date;
+  const entryDateStr = entryDateRaw ? new Date(entryDateRaw).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A';
+
+  return (
+    <li className={`batch-item ${isExpired ? 'batch-item--expired' : ''}`}>
+      <div className="batch-info-main">
+        <span className="batch-qty">{b.current_quantity} {unit}</span>
+        <span className="batch-exp">Venc: {expDate}</span>
+      </div>
+      <div className="batch-entry">
+        Entrada: {entryDateStr}
+      </div>
+    </li>
+  );
+}
+
 export default function ItemsPage({ onBack }) {
   const [items, setItems] = useState([])
   const [batches, setBatches] = useState([])
@@ -226,9 +245,14 @@ export default function ItemsPage({ onBack }) {
                       </button>
                     </div>
                     <div className="item-card__body">
-                      <p>Estoque Total: <span>{
+                      <p>Estoque Total Ativo: <span>{
                         batches
-                          .filter(b => b.item_type_id === item.id && b.status !== 'esgotado')
+                          .filter(b => {
+                            const isSameItem = b.item_type_id === item.id
+                            const isNotEsgotado = b.status !== 'esgotado'
+                            const isNotExpired = new Date(b.expiration_date) >= new Date()
+                            return isSameItem && isNotEsgotado && isNotExpired
+                          })
                           .reduce((sum, b) => sum + b.current_quantity, 0)
                       } {item.unit_of_measure}</span></p>
                       <p>Mínimo: <span>{item.min_stock_level} {item.unit_of_measure}</span></p>
@@ -237,32 +261,45 @@ export default function ItemsPage({ onBack }) {
                       )}
 
                       <div className="item-card__batches">
-                        <h4 className="item-card__batches-title">Lotes Ativos</h4>
                         {(() => {
                           const itemBatches = batches.filter(b => b.item_type_id === item.id && b.status !== 'esgotado');
+                          const today = new Date();
+                          
+                          const validBatches = itemBatches.filter(b => new Date(b.expiration_date) >= today);
+                          const expiredBatches = itemBatches.filter(b => new Date(b.expiration_date) < today);
+
                           if (itemBatches.length === 0) {
                             return <p className="item-card__no-batches">Nenhum lote disponível.</p>;
                           }
-                          return (
-                            <ul className="item-card__batch-list" role="list">
-                              {itemBatches.map(b => {
-                                const expDate = new Date(b.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
-                                const entryDateRaw = b.entry_date;
-                                const entryDateStr = entryDateRaw ? new Date(entryDateRaw).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A';
 
-                                return (
-                                  <li key={b.id} className={`batch-item batch-item--${b.status}`}>
-                                    <div className="batch-info-main">
-                                      <span className="batch-qty">{b.current_quantity} {item.unit_of_measure}</span>
-                                      <span className="batch-exp">Venc: {expDate}</span>
-                                    </div>
-                                    <div className="batch-entry">
-                                      Entrada: {entryDateStr}
-                                    </div>
-                                  </li>
-                                )
-                              })}
-                            </ul>
+                          return (
+                            <>
+                              {/* Lotes Ativos */}
+                              {validBatches.length > 0 && (
+                                <div className="batch-section">
+                                  <h4 className="item-card__batches-title">Lotes Ativos</h4>
+                                  <ul className="item-card__batch-list" role="list">
+                                    {validBatches.map(b => (
+                                      <BatchItem key={b.id} b={b} unit={item.unit_of_measure} />
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+
+                              {/* Lotes Vencidos */}
+                              {expiredBatches.length > 0 && (
+                                <div className="batch-section batch-section--expired">
+                                  <h4 className="item-card__batches-title item-card__batches-title--expired">
+                                    Lotes Vencidos ⚠️
+                                  </h4>
+                                  <ul className="item-card__batch-list" role="list">
+                                    {expiredBatches.map(b => (
+                                      <BatchItem key={b.id} b={b} unit={item.unit_of_measure} isExpired />
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </>
                           );
                         })()}
                       </div>

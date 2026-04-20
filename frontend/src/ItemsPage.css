@@ -266,6 +266,24 @@
   letter-spacing: 0.05em;
 }
 
+.item-card__batches-title--expired {
+  color: #ff6b6b;
+}
+
+.batch-section {
+  margin-bottom: var(--spacing-md);
+}
+
+.batch-section:last-child {
+  margin-bottom: 0;
+}
+
+.batch-section--expired {
+  padding: var(--spacing-xs);
+  border-radius: var(--radius-sm);
+  background: rgba(255, 77, 77, 0.03);
+}
+
 .item-card__no-batches {
   font-size: 0.8rem;
   color: var(--color-text-muted);
@@ -314,6 +332,20 @@
 
 .batch-item--disponivel {
   border-color: rgba(46, 160, 67, 0.2);
+}
+
+.batch-item--expired {
+  border-color: rgba(255, 107, 107, 0.3);
+  background: rgba(255, 77, 77, 0.05);
+}
+
+.batch-item--expired .batch-qty {
+  color: #ff8e8e;
+}
+
+.batch-item--expired .batch-exp {
+  color: #ff6b6b;
+  font-weight: 600;
 }
 
 .batch-qty {
