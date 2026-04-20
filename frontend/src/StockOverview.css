@@ -5,10 +5,10 @@
 
 /* ── Variáveis locais ── */
 :root {
-  --color-danger:       #E05A2B;
+  --color-danger: #E05A2B;
   --color-danger-light: #FF7043;
-  --color-danger-glow:  rgba(224, 90, 43, 0.20);
-  --color-warning:      #F5A623;
+  --color-danger-glow: rgba(224, 90, 43, 0.20);
+  --color-warning: #F5A623;
   --color-warning-glow: rgba(245, 166, 35, 0.18);
 }
 
@@ -518,6 +518,7 @@
    RESPONSIVO
 ================================================================ */
 @media (max-width: 768px) {
+
   .so-alerts-grid,
   .so-dash-grid {
     grid-template-columns: 1fr;

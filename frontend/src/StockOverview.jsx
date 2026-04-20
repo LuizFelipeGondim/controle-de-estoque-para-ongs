@@ -2,23 +2,23 @@ import './StockOverview.css'
 
 /* ── Dados mock — serão substituídos pela API ── */
 const CATEGORIES = [
-  { name: 'Arroz',    emoji: '🌾', kg: 45.5, minKg: 20, maxKg: 80 },
-  { name: 'Feijão',   emoji: '🫘', kg: 8.2,  minKg: 10, maxKg: 40 },
+  { name: 'Arroz', emoji: '🌾', kg: 45.5, minKg: 20, maxKg: 80 },
+  { name: 'Feijão', emoji: '🫘', kg: 8.2, minKg: 10, maxKg: 40 },
   { name: 'Macarrão', emoji: '🍝', kg: 22.0, minKg: 15, maxKg: 60 },
-  { name: 'Grãos',    emoji: '🌽', kg: 31.0, minKg: 20, maxKg: 80 },
-  { name: 'Carne',    emoji: '🥩', kg: 12.8, minKg: 15, maxKg: 50 },
-  { name: 'Legume',   emoji: '🥕', kg: 18.3, minKg: 10, maxKg: 40 },
-  { name: 'Verdura',  emoji: '🥬', kg: 5.1,  minKg: 8,  maxKg: 30 },
+  { name: 'Grãos', emoji: '🌽', kg: 31.0, minKg: 20, maxKg: 80 },
+  { name: 'Carne', emoji: '🥩', kg: 12.8, minKg: 15, maxKg: 50 },
+  { name: 'Legume', emoji: '🥕', kg: 18.3, minKg: 10, maxKg: 40 },
+  { name: 'Verdura', emoji: '🥬', kg: 5.1, minKg: 8, maxKg: 30 },
 ]
 
 const EXPIRING = [
-  { name: 'Espinafre',    category: 'Verdura', daysLeft: 2,  date: '19/04/2026' },
-  { name: 'Arroz Tipo 1', category: 'Arroz',   daysLeft: 4,  date: '21/04/2026' },
-  { name: 'Carne Bovina', category: 'Carne',   daysLeft: 8,  date: '25/04/2026' },
+  { name: 'Espinafre', category: 'Verdura', daysLeft: 2, date: '19/04/2026' },
+  { name: 'Arroz Tipo 1', category: 'Arroz', daysLeft: 4, date: '21/04/2026' },
+  { name: 'Carne Bovina', category: 'Carne', daysLeft: 8, date: '25/04/2026' },
 ]
 
 const DASHBOARD = {
-  totalDonations: 1247,
+  totalDonationsKg: 1247.5,
   totalReceivedKg: 4830.5,
 }
 
@@ -35,7 +35,7 @@ function daysLabel(days) {
 }
 
 /* ── Componente ── */
-export default function StockOverview({ onLogout }) {
+export default function StockOverview({ onLogout, onViewItems }) {
   const lowStock = CATEGORIES.filter(c => c.kg < c.minKg)
 
   const today = new Date().toLocaleDateString('pt-BR', {
@@ -141,9 +141,18 @@ export default function StockOverview({ onLogout }) {
 
           {/* ══ Seção 2 — Estoque por Categoria ══ */}
           <section className="so-section" id="estoque" aria-labelledby="estoque-titulo">
-            <div className="so-section__head">
-              <p className="so-section__tag">Inventário atual</p>
-              <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
+            <div className="so-section__head" style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem'}}>
+              <div>
+                <p className="so-section__tag">Inventário atual</p>
+                <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
+              </div>
+              <button 
+                className="so-header__logout" 
+                style={{marginBottom: '0.2rem'}}
+                onClick={onViewItems}
+              >
+                Ver todos os itens
+              </button>
             </div>
 
             <div className="so-categories-grid">
@@ -194,7 +203,8 @@ export default function StockOverview({ onLogout }) {
               <div className="so-metric-card so-metric-card--donations">
                 <div className="so-metric-card__icon" aria-hidden="true">🤝</div>
                 <div className="so-metric-card__value">
-                  {DASHBOARD.totalDonations.toLocaleString('pt-BR')}
+                  {DASHBOARD.totalDonationsKg.toLocaleString('pt-BR')}
+                  <span> kg</span>
                 </div>
                 <div className="so-metric-card__label">Doações realizadas</div>
                 <div className="so-metric-card__sublabel">Total acumulado</div>
