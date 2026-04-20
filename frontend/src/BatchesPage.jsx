@@ -244,8 +244,6 @@ export default function BatchesPage({ onBack }) {
                       const expDate = new Date(batch.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
                       const entryRaw = batch.entry_date || batch.created_at
                       const entryDate = entryRaw ? new Date(entryRaw).toLocaleDateString('pt-BR', { timeZone: 'UTC' }) : 'N/A'
-                      const statusLabel = batch.status === 'esgotado' ? 'Esgotado' : 'Disponível'
-
                       const today = new Date();
                       const expTime = new Date(batch.expiration_date);
                       const diffTime = expTime - today;
@@ -253,10 +251,13 @@ export default function BatchesPage({ onBack }) {
                       const isUrgent = batch.status !== 'esgotado' && diffDays <= 5 && diffDays >= 0;
                       const isExpired = batch.status !== 'esgotado' && diffDays < 0;
 
+                      const statusLabel = batch.status === 'esgotado' ? 'Esgotado' : (isExpired ? 'Vencido' : 'Disponível');
+                      const badgeStatusClass = batch.status === 'esgotado' ? 'esgotado' : (isExpired ? 'vencido' : 'disponivel');
+
                       return (
                         <div key={batch.id} className={`batch-card batch-card--${batch.status} ${isUrgent ? 'batch-card--urgent' : ''} ${isExpired ? 'batch-card--expired' : ''}`}>
                           <div className="batch-card__header">
-                            <span className={`batch-status-badge batch-status-badge--${batch.status}`}>
+                            <span className={`batch-status-badge batch-status-badge--${badgeStatusClass}`}>
                               <span className="pulse-dot"></span>
                               {statusLabel}
                             </span>
