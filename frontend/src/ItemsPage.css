@@ -158,6 +158,23 @@
   color: var(--color-text-primary);
 }
 
+.items-filter-clear {
+  background: none;
+  border: none;
+  color: var(--color-danger-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: opacity 0.2s;
+  font-family: var(--font-sans);
+}
+
+.items-filter-clear:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 /* Category Sections */
 .items-category-section {
   margin-bottom: var(--spacing-2xl);

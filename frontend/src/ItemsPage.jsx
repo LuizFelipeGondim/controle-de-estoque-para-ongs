@@ -275,6 +275,14 @@ export default function ItemsPage({ onBack }) {
               </option>
             ))}
           </select>
+          {(searchTerm || categoryFilter) && (
+            <button 
+              className="items-filter-clear"
+              onClick={() => { setSearchTerm(''); setCategoryFilter(''); }}
+            >
+              Limpar Filtros
+            </button>
+          )}
         </div>
 
         {loading && <div className="items-loading">Carregando itens...</div>}

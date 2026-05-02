@@ -159,6 +159,23 @@
   background: rgba(46, 160, 106, 0.05);
 }
 
+.batches-filter-clear {
+  background: none;
+  border: none;
+  color: var(--color-danger-light);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.5rem;
+  transition: opacity 0.2s;
+  font-family: var(--font-sans);
+}
+
+.batches-filter-clear:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
 .batches-filter-select option {
   background: var(--color-bg-card);
   color: var(--color-text-primary);

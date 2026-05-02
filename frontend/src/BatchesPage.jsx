@@ -239,6 +239,15 @@ export default function BatchesPage({ onBack, initialBatchId, onClearInitialBatc
         <div className="batches-sort-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <p>Lotes agrupados por data de entrada no estoque</p>
           <div className="batches-filters" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {(filterText || filterCategory || filterExpDate) && (
+              <button 
+                className="batches-filter-clear"
+                onClick={() => { setFilterText(''); setFilterCategory(''); setFilterExpDate(''); }}
+                style={{ cursor: 'pointer', padding: '0.5rem', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
+              >
+                Limpar Filtros
+              </button>
+            )}
             <input
               type="text"
               placeholder="Buscar por alimento..."
