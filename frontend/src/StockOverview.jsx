@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { API_URL } from './config/api'
 import './StockOverview.css'
 
-/* ── Dados mock — serão substituídos pela API ── */
 const CATEGORY_EMOJIS = {
   "cereal": "🌾",
   "grão": "🫘",
@@ -21,14 +20,6 @@ const CATEGORY_ORDER = [
   "cereal", "grão", "massa", "óleo", "laticínio", "hortifrúti", "proteína", "enlatado", "bebida", "condimento", "outros"
 ];
 
-const MOCK_DONATIONS = [
-  { category: 'Cestas Básicas', kg: 450 },
-  { category: 'Marmitas', kg: 320 },
-  { category: 'Higiene', kg: 120 },
-  { category: 'Grãos', kg: 85 },
-];
-
-/* Componente de Gráfico de Barras */
 function ImpactChart({ data, colorScheme = 'primary' }) {
   const maxVal = Math.max(...data.map(d => d.kg), 1);
 
@@ -40,7 +31,7 @@ function ImpactChart({ data, colorScheme = 'primary' }) {
           <div key={i} className="impact-chart__row">
             <div className="impact-chart__label">
               <span className="impact-chart__cat">{item.category}</span>
-              <span className="impact-chart__val">{item.kg.toLocaleString('pt-BR')}<span> kg</span></span>
+              <span className="impact-chart__val">{item.kg.toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}<span> kg</span></span>
             </div>
             <div className="impact-chart__bar-track">
               <div
@@ -55,7 +46,6 @@ function ImpactChart({ data, colorScheme = 'primary' }) {
   );
 }
 
-/* Urgência da validade */
 function urgencyMod(days) {
   if (days <= 3) return 'urgent'
   if (days <= 7) return 'warning'
@@ -67,9 +57,9 @@ function daysLabel(days) {
   return `Vence em ${days} dias`
 }
 
-/* ── Componente ── */
-export default function StockOverview({ onLogout, onViewItems, onViewBatches }) {
+export default function StockOverview({ onLogout, onViewItems, onViewBatches, onViewDonations, onViewHistory }) {
   const [receivedImpact, setReceivedImpact] = useState({ total: 0, byCategory: [] });
+  const [donatedImpact, setDonatedImpact] = useState({ total: 0, byCategory: [] });
   const [expiringAlerts, setExpiringAlerts] = useState([]);
   const [criticalAlerts, setCriticalAlerts] = useState([]);
   const [categoryStats, setCategoryStats] = useState([]);
@@ -78,20 +68,26 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [batchesRes, itemsRes] = await Promise.all([
+        const [batchesRes, itemsRes, packetsRes, donItemsRes] = await Promise.all([
           fetch(`${API_URL}/batch`, { credentials: 'include' }),
-          fetch(`${API_URL}/items`, { credentials: 'include' })
+          fetch(`${API_URL}/items`, { credentials: 'include' }),
+          fetch(`${API_URL}/donation-packets?status=finalizado`, { credentials: 'include' }),
+          fetch(`${API_URL}/donation-items`, { credentials: 'include' })
         ]);
 
-        if (!batchesRes.ok || !itemsRes.ok) throw new Error('Falha ao buscar dados');
+        if (!batchesRes.ok || !itemsRes.ok) throw new Error('Falha ao buscar dados básicos');
 
         const batches = await batchesRes.json();
         const items = await itemsRes.json();
+        const allFinalized = packetsRes.ok ? await packetsRes.json() : [];
+        const allDonationItems = donItemsRes.ok ? await donItemsRes.json() : [];
 
         const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-        // 1. Processar Alertas de Validade (próximos 15 dias)
+        // 1. Alertas de Validade
         const expiring = batches
           .filter(b => b.status !== 'esgotado')
           .map(b => {
@@ -105,60 +101,70 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
 
         setExpiringAlerts(expiring);
 
-        // 2. Processar Estoque Crítico e Totais por Categoria
+        // 2. Estoque Crítico
         const itemTotals = items.map(item => {
           const itemBatches = batches.filter(b => b.item_type_id === item.id && b.status !== 'esgotado');
-          const totalKg = itemBatches.reduce((sum, b) => {
+          const totalQty = itemBatches.reduce((sum, b) => {
             const isExpired = new Date(b.expiration_date) < today;
             return sum + (!isExpired ? b.current_quantity : 0);
           }, 0);
-          return { ...item, totalKg };
+          return { ...item, totalQty };
         });
 
         const critical = itemTotals
-          .filter(item => item.totalKg < item.min_stock_level)
-          .sort((a, b) => (a.totalKg / a.min_stock_level) - (b.totalKg / b.min_stock_level));
+          .filter(item => item.totalQty < item.min_stock_level)
+          .sort((a, b) => (a.totalQty / item.min_stock_level) - (b.totalQty / item.min_stock_level));
 
         setCriticalAlerts(critical);
 
-        // 3. Agrupar por Categoria para o Grid
+        // 3. Grid de Categorias
         const stats = CATEGORY_ORDER.map(catName => {
           const catItems = itemTotals.filter(i => i.category === catName);
-          const totalKg = catItems.reduce((sum, i) => sum + i.totalKg, 0);
-          const minKg = catItems.reduce((sum, i) => sum + i.min_stock_level, 0);
-
-          if (catItems.length === 0 && totalKg === 0) return null;
-
-          return {
-            name: catName,
-            emoji: CATEGORY_EMOJIS[catName] || "📦",
-            kg: totalKg,
-            minKg: minKg || 0
-          };
+          const totalQty = catItems.reduce((sum, i) => sum + i.totalQty, 0);
+          const minQty = catItems.reduce((sum, i) => sum + i.min_stock_level, 0);
+          if (catItems.length === 0 && totalQty === 0) return null;
+          return { name: catName, emoji: CATEGORY_EMOJIS[catName] || "📦", qty: totalQty, minQty };
         }).filter(Boolean);
-
         setCategoryStats(stats);
 
-        // 4. Dashboard Impacto Mensal
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
+        // 4. Impacto ENTRADAS
         const monthBatches = batches.filter(b => {
           const date = new Date(b.created_at || b.received_at || Date.now());
           return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
         });
-
-        const dashTotal = monthBatches.reduce((sum, b) => sum + b.initial_quantity, 0);
-        const grouped = monthBatches.reduce((acc, b) => {
+        const dashReceivedTotal = monthBatches.reduce((sum, b) => sum + (b.initial_quantity * (b.item_conversion_factor || 1)), 0);
+        const groupedReceived = monthBatches.reduce((acc, b) => {
           const cat = b.item_category || 'outros';
-          acc[cat] = (acc[cat] || 0) + b.initial_quantity;
+          acc[cat] = (acc[cat] || 0) + (b.initial_quantity * (b.item_conversion_factor || 1));
           return acc;
         }, {});
+        setReceivedImpact({ 
+          total: dashReceivedTotal, 
+          byCategory: Object.entries(groupedReceived).map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg) 
+        });
 
-        const byCategory = Object.entries(grouped)
-          .map(([category, kg]) => ({ category, kg }))
-          .sort((a, b) => b.kg - a.kg);
+        // 5. Impacto SAÍDAS
+        const monthPackets = allFinalized.filter(p => {
+          const date = new Date(p.donation_date);
+          return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
+        });
+        const monthPacketIds = new Set(monthPackets.map(p => p.id));
+        let totalDonatedKg = 0;
+        const groupedDonated = {};
 
-        setReceivedImpact({ total: dashTotal, byCategory });
+        allDonationItems.forEach(di => {
+          if (monthPacketIds.has(di.donation_packet_id)) {
+            const batch = batches.find(b => b.id === di.batch_id);
+            const weight = di.quantity_removed * (batch?.item_conversion_factor || 1);
+            const cat = batch?.item_category || 'outros';
+            totalDonatedKg += weight;
+            groupedDonated[cat] = (groupedDonated[cat] || 0) + weight;
+          }
+        });
+        setDonatedImpact({ 
+          total: totalDonatedKg, 
+          byCategory: Object.entries(groupedDonated).map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg) 
+        });
 
       } catch (err) {
         console.error(err);
@@ -166,63 +172,39 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
         setLoading(false);
       }
     }
-
     fetchData();
   }, []);
 
   const todayStr = new Date().toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
   })
 
   return (
     <div className="so">
-
-      {/* ══ Header ══ */}
       <header className="so-header">
         <div className="so-header__brand">
           <div className="so-header__logo" aria-hidden="true">🌱</div>
-          <span className="so-header__brand-name">
-            ONG<span>Conecta</span>
-          </span>
+          <span className="so-header__brand-name">ONG<span>Conecta</span></span>
         </div>
-        <button
-          id="btn-logout"
-          className="so-header__logout"
-          onClick={onLogout}
-          aria-label="Sair da plataforma"
-        >
-          Sair
-        </button>
+        <button className="so-header__logout" onClick={onLogout}>Sair</button>
       </header>
 
-      {/* ══ Conteúdo principal ══ */}
-      <main className="so-main" role="main">
+      <main className="so-main">
         <div className="so-container">
-
-          {/* Título da página */}
           <div className="so-page-header">
             <div>
               <p className="so-page-header__tag">Bem-vindo de volta</p>
               <h1 className="so-page-header__title">Visão Geral dos Estoques</h1>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
-              <p className="so-page-header__date" aria-label="Data de hoje">{todayStr}</p>
-            </div>
+            <p className="so-page-header__date">{todayStr}</p>
           </div>
 
-          {/* ══ Seção 1 — Avisos ══ */}
-          <section className="so-section" id="avisos" aria-labelledby="avisos-titulo">
+          <section className="so-section">
             <div className="so-section__head">
               <p className="so-section__tag">Atenção necessária</p>
-              <h2 id="avisos-titulo" className="so-section__title">⚠️ Avisos</h2>
+              <h2 className="so-section__title">⚠️ Avisos</h2>
             </div>
-
-            {loading ? (
-              <div className="so-dash-card__loading">Analisando lotes e estoques...</div>
-            ) : (
+            {loading ? <div className="so-dash-card__loading">Analisando dados...</div> : (
               <div className="so-alerts-grid">
                 {/* Validade próxima */}
                 <div className="so-alert-panel so-alert-panel--expiry">
@@ -269,7 +251,7 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
                             <span className="so-alert-item__name">{CATEGORY_EMOJIS[item.category] || "📦"} {item.name}</span>
                             <span className="so-alert-item__cat">Mínimo: {item.min_stock_level} {item.unit_of_measure}</span>
                           </div>
-                          <span className="so-alert-item__days">{item.totalKg.toFixed(1)} {item.unit_of_measure} restante</span>
+                          <span className="so-alert-item__days">{item.totalQty.toFixed(1)} {item.unit_of_measure} restante</span>
                         </li>
                       ))}
                     </ul>
@@ -279,7 +261,6 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
             )}
           </section>
 
-          {/* ══ Seção 2 — Estoque por Categoria ══ */}
           <section className="so-section" id="estoque" aria-labelledby="estoque-titulo">
             <div className="so-section__head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
               <div>
@@ -287,101 +268,57 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
                 <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                <button
-                  className="so-header__logout"
-                  onClick={onViewBatches}
-                >
-                  Ver todos os lotes
-                </button>
-                <button
-                  className="so-header__logout"
-                  onClick={onViewItems}
-                >
-                  Ver todos os itens
-                </button>
+                <button className="so-header__logout" onClick={onViewHistory}>Ver Histórico</button>
+                <button className="so-header__logout" onClick={onViewDonations}>Gerenciar Doações</button>
+                <button className="so-header__logout" onClick={onViewBatches}>Ver todos os lotes</button>
+                <button className="so-header__logout" onClick={onViewItems}>Ver todos os itens</button>
               </div>
             </div>
-
-            {loading ? (
-              <div className="so-dash-card__loading">Calculando saldos por categoria...</div>
-            ) : (
+            {loading ? <div className="so-dash-card__loading">Calculando...</div> : (
               <div className="so-categories-grid">
-                {categoryStats.map((cat, i) => {
-                  const isCritical = cat.kg < cat.minKg
-                  const pct = Math.min((cat.kg / cat.maxKg) * 100, 100)
-                  return (
-                    <div
-                      key={i}
-                      className={`so-cat-card${isCritical ? ' so-cat-card--critical' : ''}`}
-                    >
-                      {isCritical && (
-                        <span className="so-cat-card__badge" aria-label="Estoque crítico">Crítico</span>
-                      )}
-                      <div className="so-cat-card__emoji" aria-hidden="true">{cat.emoji}</div>
-                      <div className="so-cat-card__name">{cat.name}</div>
-                      <div className="so-cat-card__kg">
-                        {cat.kg.toFixed(1)}<span> kg</span>
-                      </div>
-                      <div className="so-cat-card__min">Mín: {cat.minKg} kg</div>
-                    </div>
-                  )
-                })}
+                {categoryStats.map((cat, i) => (
+                  <div key={i} className={`so-cat-card ${cat.qty < cat.minQty ? 'so-cat-card--critical' : ''}`}>
+                    <div className="so-cat-card__emoji">{cat.emoji}</div>
+                    <div className="so-cat-card__name">{cat.name}</div>
+                    <div className="so-cat-card__kg">{cat.qty.toFixed(1)}</div>
+                  </div>
+                ))}
               </div>
             )}
           </section>
 
-          {/* ══ Seção 3 — Dashboard ══ */}
-          <section className="so-section" id="dashboard" aria-labelledby="dash-titulo">
+          <section className="so-section">
             <div className="so-section__head">
-              <p className="so-section__tag">Impacto do mês atual</p>
-              <h2 id="dash-titulo" className="so-section__title">📊 Dashboard Mensal</h2>
+              <p className="so-section__tag">Impacto do mês</p>
+              <h2 className="so-section__title">📊 Dashboard Mensal</h2>
             </div>
-
             <div className="so-dash-container">
-              {/* Subseção: Doações Realizadas (Mock) */}
               <div className="so-dash-card so-dash-card--donations">
                 <div className="so-dash-card__header">
                   <div className="so-dash-card__icon">🤝</div>
                   <div className="so-dash-card__info">
                     <h3 className="so-dash-card__title">Itens Doados</h3>
-                    <div className="so-dash-card__total">
-                      {(975).toLocaleString('pt-BR')}<span> kg</span>
-                    </div>
+                    <div className="so-dash-card__total">{donatedImpact.total.toFixed(1)}<span> kg</span></div>
                   </div>
                 </div>
                 <div className="so-dash-card__content">
-                  <p className="so-dash-card__subtitle">Distribuição por categoria (Mock)</p>
-                  <ImpactChart data={MOCK_DONATIONS} colorScheme="primary" />
+                  {donatedImpact.byCategory.length > 0 ? <ImpactChart data={donatedImpact.byCategory} colorScheme="primary" /> : <p className="so-dash-card__empty">Sem doações.</p>}
                 </div>
               </div>
-
-              {/* Subseção: Itens Recebidos (Real) */}
               <div className="so-dash-card so-dash-card--received">
                 <div className="so-dash-card__header">
                   <div className="so-dash-card__icon">📦</div>
                   <div className="so-dash-card__info">
                     <h3 className="so-dash-card__title">Itens Recebidos</h3>
-                    <div className="so-dash-card__total">
-                      {receivedImpact.total.toLocaleString('pt-BR')}<span> kg</span>
-                    </div>
+                    <div className="so-dash-card__total">{receivedImpact.total.toFixed(1)}<span> kg</span></div>
                   </div>
                 </div>
                 <div className="so-dash-card__content">
-                  {loading ? (
-                    <div className="so-dash-card__loading">Carregando dados...</div>
-                  ) : receivedImpact.byCategory.length > 0 ? (
-                    <>
-                      <p className="so-dash-card__subtitle">Distribuição por categoria</p>
-                      <ImpactChart data={receivedImpact.byCategory} colorScheme="accent" />
-                    </>
-                  ) : (
-                    <p className="so-dash-card__empty">Nenhuma entrada registrada este mês.</p>
-                  )}
+                  {receivedImpact.byCategory.length > 0 ? <ImpactChart data={receivedImpact.byCategory} colorScheme="accent" /> : <p className="so-dash-card__empty">Sem entradas.</p>}
                 </div>
               </div>
             </div>
           </section>
-
         </div>
       </main>
     </div>
