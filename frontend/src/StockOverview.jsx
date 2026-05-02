@@ -68,7 +68,7 @@ function daysLabel(days) {
 }
 
 /* ── Componente ── */
-export default function StockOverview({ onLogout, onViewItems, onViewBatches }) {
+export default function StockOverview({ onLogout, onViewItems, onViewBatches, onViewDonations, onViewHistory }) {
   const [receivedImpact, setReceivedImpact] = useState({ total: 0, byCategory: [] });
   const [expiringAlerts, setExpiringAlerts] = useState([]);
   const [criticalAlerts, setCriticalAlerts] = useState([]);
@@ -287,6 +287,18 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches }) 
                 <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
               </div>
               <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.2rem' }}>
+                <button
+                  className="so-header__logout"
+                  onClick={onViewHistory}
+                >
+                  Ver Histórico
+                </button>
+                <button
+                  className="so-header__logout"
+                  onClick={onViewDonations}
+                >
+                  Gerenciar Doações
+                </button>
                 <button
                   className="so-header__logout"
                   onClick={onViewBatches}
