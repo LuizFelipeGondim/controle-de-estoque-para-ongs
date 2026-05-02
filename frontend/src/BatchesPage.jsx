@@ -2,6 +2,20 @@ import { useEffect, useState, useMemo } from 'react'
 import { API_URL } from './config/api'
 import './BatchesPage.css'
 
+const CATEGORY_EMOJIS = {
+  "cereal": "🌾",
+  "grão": "🫘",
+  "massa": "🍝",
+  "óleo": "🛢️",
+  "laticínio": "🥛",
+  "hortifrúti": "🥬",
+  "proteína": "🥩",
+  "enlatado": "🥫",
+  "bebida": "🧃",
+  "condimento": "🧂",
+  "outros": "📦"
+};
+
 export default function BatchesPage({ onBack }) {
   const [batches, setBatches] = useState([])
   const [items, setItems] = useState([])
@@ -10,6 +24,7 @@ export default function BatchesPage({ onBack }) {
 
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [viewingBatch, setViewingBatch] = useState(null)
   const [selectedItem, setSelectedItem] = useState('')
   const [quantity, setQuantity] = useState('')
   const [expirationDate, setExpirationDate] = useState('')
@@ -159,7 +174,7 @@ export default function BatchesPage({ onBack }) {
     const groups = sorted.reduce((acc, batch) => {
       const dateObj = new Date(batch.entry_date || batch.created_at)
       const dateKey = dateObj.toISOString().split('T')[0] // "2026-04-20"
-      
+
       if (!acc[dateKey]) acc[dateKey] = []
       acc[dateKey].push(batch)
       return acc
@@ -213,15 +228,15 @@ export default function BatchesPage({ onBack }) {
         <div className="batches-sort-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <p>Lotes agrupados por data de entrada no estoque</p>
           <div className="batches-filters" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <input 
-              type="text" 
-              placeholder="Buscar por alimento..." 
+            <input
+              type="text"
+              placeholder="Buscar por alimento..."
               value={filterText}
               onChange={e => setFilterText(e.target.value)}
               className="batches-filter-input"
             />
-            <select 
-              value={filterCategory} 
+            <select
+              value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
               className="batches-filter-select"
             >
@@ -232,8 +247,8 @@ export default function BatchesPage({ onBack }) {
             </select>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Vence até:</span>
-              <input 
-                type="date" 
+              <input
+                type="date"
                 value={filterExpDate}
                 onChange={e => setFilterExpDate(e.target.value)}
                 className="batches-filter-input"
@@ -282,7 +297,6 @@ export default function BatchesPage({ onBack }) {
                       <div className="col-qty">Qtd. Atual</div>
                       <div className="col-exp">Validade</div>
                       <div className="col-status">Status</div>
-                      <div className="col-actions"></div>
                     </div>
 
                     <div className="batches-table__body">
@@ -299,9 +313,14 @@ export default function BatchesPage({ onBack }) {
                         const badgeStatusClass = batch.status === 'esgotado' ? 'esgotado' : (isExpired ? 'vencido' : 'disponivel');
 
                         return (
-                          <div key={batch.id} className={`batch-row batch-row--${badgeStatusClass}`}>
+                          <div
+                            key={batch.id}
+                            className={`batch-row batch-row--${badgeStatusClass}`}
+                            onClick={() => setViewingBatch(batch)}
+                            style={{ cursor: 'pointer' }}
+                          >
                             <div className="col-item">
-                              <span className="item-name-primary">{batch.item_name}</span>
+                              <span className="item-name-primary">{CATEGORY_EMOJIS[batch.item_category?.toLowerCase()] || "📦"} {batch.item_name}</span>
                             </div>
                             <div className="col-cat">
                               <span className="cat-tag">{batch.item_category}</span>
@@ -324,15 +343,6 @@ export default function BatchesPage({ onBack }) {
                                 {statusLabel}
                               </span>
                             </div>
-                            <div className="col-actions">
-                              <button
-                                className="batch-row__delete"
-                                onClick={() => handleDelete(batch.id)}
-                                aria-label="Excluir lote"
-                              >
-                                &times;
-                              </button>
-                            </div>
                           </div>
                         )
                       })}
@@ -344,6 +354,114 @@ export default function BatchesPage({ onBack }) {
           </div>
         )}
       </main>
+
+      {/* ══ Viewing Modal ══ */}
+      {viewingBatch && (
+        <div className="batch-modal-overlay" onClick={() => setViewingBatch(null)}>
+          <div className="batch-modal-content batch-modal-content--large" onClick={e => e.stopPropagation()}>
+            <header className="batch-modal-content__header">
+              <h2>Detalhes do Lote #{viewingBatch.id}</h2>
+              <button className="batch-modal-content__close" onClick={() => setViewingBatch(null)}>&times;</button>
+            </header>
+
+            <div className="batch-modal-content__body">
+              <div className="batch-details-grid">
+                <div className="batch-details-main">
+                  <h3 style={{ marginBottom: '1rem', color: 'var(--color-primary-light)' }}>Informações do Lote</h3>
+                  <div className="batch-details-list">
+                    <div className="batch-detail-item">
+                      <span className="batch-detail-label">Status:</span>
+                      <span className={`status-pill status-pill--${viewingBatch.status === 'esgotado' ? 'esgotado' : (new Date(viewingBatch.expiration_date) - new Date() < 0 ? 'vencido' : 'disponivel')}`}>
+                        {viewingBatch.status === 'esgotado' ? 'Esgotado' : (new Date(viewingBatch.expiration_date) - new Date() < 0 ? 'Vencido' : 'Disponível')}
+                      </span>
+                    </div>
+                    <div className="batch-detail-item">
+                      <span className="batch-detail-label">Qtd. Inicial:</span>
+                      <span>{viewingBatch.initial_quantity} {viewingBatch.item_unit_of_measure}</span>
+                    </div>
+                    <div className="batch-detail-item">
+                      <span className="batch-detail-label">Qtd. Atual:</span>
+                      <span style={{ fontWeight: 700, color: 'var(--color-primary-light)' }}>{viewingBatch.current_quantity} {viewingBatch.item_unit_of_measure}</span>
+                    </div>
+                    <div className="batch-detail-item">
+                      <span className="batch-detail-label">Data de Validade:</span>
+                      <span>{new Date(viewingBatch.expiration_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</span>
+                    </div>
+                    <div className="batch-detail-item">
+                      <span className="batch-detail-label">Data de Entrada:</span>
+                      <span>{new Date(viewingBatch.entry_date || viewingBatch.created_at).toLocaleDateString('pt-BR')}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="batch-details-side">
+                  <h3>Informações do Item</h3>
+                  {(() => {
+                    const parentItem = items.find(i => i.id === viewingBatch.item_type_id);
+                    if (!parentItem) return <p>Informação do item não encontrada.</p>;
+                    return (
+                      <div className="batch-item-info">
+                        <div className="batch-item-header">
+                          <span className="batch-item-emoji">{CATEGORY_EMOJIS[parentItem.category?.toLowerCase()] || "📦"}</span>
+                          <h4>{parentItem.name}</h4>
+                        </div>
+                        <p className="batch-item-category">{parentItem.category}</p>
+                        <div className="batch-item-stats">
+                          <p><strong>Unidade:</strong> {parentItem.unit_of_measure}</p>
+                          <p><strong>Mínimo:</strong> {parentItem.min_stock_level} {parentItem.unit_of_measure}</p>
+                        </div>
+                      </div>
+                    )
+                  })()}
+                </div>
+              </div>
+            </div>
+
+            <footer className="batch-modal-content__footer">
+              <button 
+                type="button" 
+                className="batch-modal-form__delete-btn"
+                onClick={() => {
+                  handleDelete(viewingBatch.id);
+                  setViewingBatch(null);
+                }}
+                style={{ 
+                  background: 'rgba(224, 90, 43, 0.1)', 
+                  color: 'var(--color-danger-light)', 
+                  padding: '0.8rem 1.5rem', 
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid rgba(224, 90, 43, 0.3)',
+                  cursor: 'pointer',
+                  fontWeight: 600,
+                  marginTop: '1.5rem',
+                  float: 'left'
+                }}
+              >
+                🗑️ Excluir Lote
+              </button>
+              
+              <button 
+                type="button" 
+                className="batch-modal-form__cancel"
+                onClick={() => setViewingBatch(null)}
+                style={{ 
+                  background: 'rgba(255,255,255,0.05)', 
+                  color: 'white', 
+                  padding: '0.8rem 1.5rem', 
+                  borderRadius: 'var(--radius-sm)',
+                  border: '1px solid var(--color-border)',
+                  cursor: 'pointer',
+                  marginTop: '1.5rem',
+                  float: 'right'
+                }}
+              >
+                Fechar Detalhes
+              </button>
+              <div style={{ clear: 'both' }}></div>
+            </footer>
+          </div>
+        </div>
+      )}
 
       {/* ══ Modal Novo Lote ══ */}
       {isModalOpen && (

@@ -482,6 +482,107 @@
   margin-top: var(--spacing-md);
 }
 
+.batch-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+  transform: translateX(4px);
+  cursor: pointer;
+}
+
+/* Detailed Viewing Modal */
+.batch-modal-content--large {
+  max-width: 800px !important;
+  width: 95%;
+}
+
+.batch-modal-content__body {
+  padding: var(--spacing-xl);
+}
+
+.batch-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: var(--spacing-xl);
+}
+
+.batch-details-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+}
+
+.batch-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.batch-detail-label {
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.batch-details-side {
+  background: rgba(255, 255, 255, 0.02);
+  padding: var(--spacing-lg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+}
+
+.batch-details-side h3 {
+  font-size: 1rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--color-text-primary);
+}
+
+.batch-item-info {
+  margin-top: var(--spacing-md);
+}
+
+.batch-item-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-xs);
+}
+
+.batch-item-emoji {
+  font-size: 1.4rem;
+}
+
+.batch-item-header h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.batch-item-category {
+  color: var(--color-accent);
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--spacing-lg);
+}
+
+.batch-item-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.batch-item-stats strong {
+  color: var(--color-text-primary);
+}
+
+.batch-modal-content__footer {
+  padding: 0 var(--spacing-xl) var(--spacing-xl) var(--spacing-xl);
+}
+
 /* Responsiveness */
 @media (max-width: 768px) {
   .batches-page-header {
