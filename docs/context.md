@@ -135,10 +135,13 @@ Página de destino após o login. Composta por seções dinâmicas que fornecem 
 
 **Header fixo** — logo ONGConecta, barra de navegação com acesso rápido (Histórico, Doações, Lotes, Itens) e botão "Sair" (retorna à tela de login).
 
+**Fundo Animado** — A tela principal agora utiliza um efeito de degradê dinâmico nas laterais (bordas), criando uma atmosfera translúcida de *Glassmorphism* através de filtros CSS e `mask-image`.
+
 **Seção 1 — ⚠️ Avisos**
-Painéis automáticos de tamanho fixo com rolagem interna inteligente (scroll) que alertam sobre:
-- *Validade Próxima* — lista itens com vencimento iminente.
-- *Estoque Crítico* — lista itens abaixo da quantidade mínima.
+Painéis automáticos de tamanho fixo com rolagem interna inteligente (scroll), empilhamento responsivo, e cores de urgência. Alertam sobre:
+- *Validade Próxima* — lista lotes com vencimento iminente (até 15 dias).
+- *Estoque Crítico* — lista itens operando abaixo da quantidade mínima segura.
+- *Lotes Vencidos* — painel em destaque vermelho listando lotes expirados que precisam de atenção imediata.
 
 **Seção 2 — 📦 Estoque por Categoria**
 Grid de cards que exibe o saldo atual em tempo real por tipo de alimento, incluindo a exibição dinâmica da **unidade de medida**. Adicionalmente, todas as categorias recebem tratamento visual com primeira letra maiúscula (*Capitalize*) para melhor legibilidade.
@@ -151,6 +154,7 @@ Dividido em duas áreas de análise de impacto social:
 
 ### Página de Itens — `ItemsPage` (concluída e integrada)
 Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real:
+- **Busca e Filtros Inteligentes**: Implementação de barra de busca textual e dropdown seletor de categorias, filtrando os resultados exibidos na tela de forma reativa e instantânea.
 - **Gestão de Itens (Criar e Editar)**: Inclusão de botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`. Conta também com funcionalidade de **Edição**, reaproveitando o mesmo modal com requisição `PUT /items/:id`.
 - **Exclusão Segura**: Opção de remover itens diretamente da lista, com trava de segurança que bloqueia a remoção de alimentos que ainda possuam lotes vinculados.
 - **Visualização Fixa Inteligente**: Cards de itens configurados com tamanho fixo para manter a proporção do Grid. A lista detalhada de lotes atrelados dentro do card agora conta com uma barra de rolagem (scroll interno) dinâmica.
