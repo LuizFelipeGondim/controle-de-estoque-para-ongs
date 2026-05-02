@@ -6,6 +6,11 @@ export default function HistoryPage({ onBack }) {
   const [movements, setMovements] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  
+  // Filter states
+  const [filterDate, setFilterDate] = useState('')
+  const [filterType, setFilterType] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
 
   useEffect(() => {
     async function fetchHistory() {
@@ -49,7 +54,7 @@ export default function HistoryPage({ onBack }) {
               id: `exit-${item.id}`,
               date: packet.donation_date,
               type: 'saida',
-              itemName: batch?.item_name || 'Alimento',
+              itemName: batch?.item_name || 'Item',
               quantity: item.quantity_removed,
               unit: batch?.item_unit_of_measure || 'un',
               partner: packet.destination,
@@ -103,6 +108,40 @@ export default function HistoryPage({ onBack }) {
           </div>
         </div>
 
+        <div className="history-filters">
+          <input 
+            type="text" 
+            placeholder="Buscar por item..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="history-filter-input"
+          />
+          <input 
+            type="date" 
+            value={filterDate}
+            onChange={e => setFilterDate(e.target.value)}
+            className="history-filter-date"
+            title="Filtrar por data"
+          />
+          <select 
+            value={filterType}
+            onChange={e => setFilterType(e.target.value)}
+            className="history-filter-select"
+          >
+            <option value="">Todos os Tipos</option>
+            <option value="entrada">Entradas</option>
+            <option value="saida">Saídas</option>
+          </select>
+          {(searchTerm || filterDate || filterType) && (
+            <button 
+              className="history-filter-clear"
+              onClick={() => { setSearchTerm(''); setFilterDate(''); setFilterType(''); }}
+            >
+              Limpar Filtros
+            </button>
+          )}
+        </div>
+
         {loading && <div className="history-loading">Compilando histórico...</div>}
         {error && <div className="history-error">{error}</div>}
 
@@ -122,14 +161,21 @@ export default function HistoryPage({ onBack }) {
                     <tr>
                       <th>Data</th>
                       <th>Tipo</th>
-                      <th>Alimento</th>
+                      <th>Item</th>
                       <th>Quantidade</th>
                       <th>Origem / Destino</th>
                       <th>Observações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {movements.map(move => {
+                    {movements
+                      .filter(move => {
+                        const matchesSearch = move.itemName.toLowerCase().includes(searchTerm.toLowerCase());
+                        const matchesDate = filterDate ? move.date.startsWith(filterDate) : true;
+                        const matchesType = filterType ? move.type === filterType : true;
+                        return matchesSearch && matchesDate && matchesType;
+                      })
+                      .map(move => {
                       const date = new Date(move.date).toLocaleDateString('pt-BR', { 
                         day: '2-digit', 
                         month: '2-digit', 
