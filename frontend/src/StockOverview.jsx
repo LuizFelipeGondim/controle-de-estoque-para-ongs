@@ -186,6 +186,12 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           <div className="so-header__logo" aria-hidden="true">🌱</div>
           <span className="so-header__brand-name">ONG<span>Conecta</span></span>
         </div>
+        <nav className="so-header__nav">
+          <button className="so-header__nav-btn" onClick={onViewHistory}>Histórico</button>
+          <button className="so-header__nav-btn" onClick={onViewDonations}>Doações</button>
+          <button className="so-header__nav-btn" onClick={onViewBatches}>Lotes</button>
+          <button className="so-header__nav-btn" onClick={onViewItems}>Itens</button>
+        </nav>
         <button className="so-header__logout" onClick={onLogout}>Sair</button>
       </header>
 
@@ -262,17 +268,9 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           </section>
 
           <section className="so-section" id="estoque" aria-labelledby="estoque-titulo">
-            <div className="so-section__head" style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
-              <div>
-                <p className="so-section__tag">Inventário atual</p>
-                <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
-              </div>
-              <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '0.2rem' }}>
-                <button className="so-header__logout" onClick={onViewHistory}>Ver Histórico</button>
-                <button className="so-header__logout" onClick={onViewDonations}>Gerenciar Doações</button>
-                <button className="so-header__logout" onClick={onViewBatches}>Ver todos os lotes</button>
-                <button className="so-header__logout" onClick={onViewItems}>Ver todos os itens</button>
-              </div>
+            <div className="so-section__head">
+              <p className="so-section__tag">Inventário atual</p>
+              <h2 id="estoque-titulo" className="so-section__title">📦 Estoque por Categoria</h2>
             </div>
             {loading ? <div className="so-dash-card__loading">Calculando...</div> : (
               <div className="so-categories-grid">

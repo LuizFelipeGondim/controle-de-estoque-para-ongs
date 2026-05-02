@@ -28,12 +28,14 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 var(--spacing-xl);
-  height: 68px;
+  padding: var(--spacing-sm) var(--spacing-xl);
+  min-height: 68px;
   background: rgba(22, 27, 34, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid var(--color-border);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
 }
 
 .so-header__brand {
@@ -84,6 +86,34 @@
   color: var(--color-text-primary);
   border-color: var(--color-border-hover);
   background: rgba(255, 255, 255, 0.04);
+}
+
+.so-header__nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: var(--spacing-xs);
+  flex: 1;
+}
+
+.so-header__nav-btn {
+  padding: 0.45rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: var(--font-sans);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.so-header__nav-btn:hover {
+  color: var(--color-text-primary);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: var(--color-border-hover);
 }
 
 /* ===== Main layout ===== */
