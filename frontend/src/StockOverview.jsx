@@ -123,7 +123,10 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           const totalQty = catItems.reduce((sum, i) => sum + i.totalQty, 0);
           const minQty = catItems.reduce((sum, i) => sum + i.min_stock_level, 0);
           if (catItems.length === 0 && totalQty === 0) return null;
-          return { name: catName, emoji: CATEGORY_EMOJIS[catName] || "📦", qty: totalQty, minQty };
+          
+          const unit = catItems.length > 0 ? catItems[0].unit_of_measure : '';
+          
+          return { name: catName, emoji: CATEGORY_EMOJIS[catName] || "📦", qty: totalQty, minQty, unit };
         }).filter(Boolean);
         setCategoryStats(stats);
 
@@ -278,7 +281,9 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
                   <div key={i} className={`so-cat-card ${cat.qty < cat.minQty ? 'so-cat-card--critical' : ''}`}>
                     <div className="so-cat-card__emoji">{cat.emoji}</div>
                     <div className="so-cat-card__name">{cat.name}</div>
-                    <div className="so-cat-card__kg">{cat.qty.toFixed(1)}</div>
+                    <div className="so-cat-card__kg">
+                      {cat.qty.toFixed(1)} <span>{cat.unit}</span>
+                    </div>
                   </div>
                 ))}
               </div>
