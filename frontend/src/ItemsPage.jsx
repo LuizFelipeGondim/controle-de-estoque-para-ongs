@@ -58,7 +58,7 @@ export default function ItemsPage({ onBack }) {
   // ====== Form / Modal States ======
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [formData, setFormData] = useState({
-    name: '', category: 'outros', unit_of_measure: 'unidade',
+    name: '', category: 'outros', unit_of_measure: 'kg',
     min_stock_level: 0, is_essential: false, nutritional_info: ''
   })
   const [formLoading, setFormLoading] = useState(false)
@@ -125,7 +125,7 @@ export default function ItemsPage({ onBack }) {
       setItems(prev => [...prev, newItem])
       setIsModalOpen(false)
       setFormData({
-        name: '', category: 'outros', unit_of_measure: 'unidade',
+        name: '', category: 'outros', unit_of_measure: 'kg',
         min_stock_level: 0, is_essential: false, nutritional_info: ''
       })
     } catch (err) {
@@ -137,7 +137,7 @@ export default function ItemsPage({ onBack }) {
 
   const handleDeleteItem = async (itemId) => {
     setActionError(null)
-    
+
     if (!window.confirm("Você tem certeza que deseja excluir este alimento do inventário?")) {
       return
     }
@@ -236,8 +236,8 @@ export default function ItemsPage({ onBack }) {
                           <span className="item-card__badge" aria-label="Item essencial">Essencial</span>
                         ) : null}
                       </div>
-                      <button 
-                        className="item-card__delete-btn" 
+                      <button
+                        className="item-card__delete-btn"
                         onClick={() => handleDeleteItem(item.id)}
                         title="Remover Item"
                       >
@@ -264,7 +264,7 @@ export default function ItemsPage({ onBack }) {
                         {(() => {
                           const itemBatches = batches.filter(b => b.item_type_id === item.id && b.status !== 'esgotado');
                           const today = new Date();
-                          
+
                           const validBatches = itemBatches.filter(b => new Date(b.expiration_date) >= today);
                           const expiredBatches = itemBatches.filter(b => new Date(b.expiration_date) < today);
 
