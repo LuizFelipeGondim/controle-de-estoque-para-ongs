@@ -65,6 +65,10 @@ export default function ItemsPage({ onBack }) {
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState(null)
   const [actionError, setActionError] = useState(null)
+  
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('')
 
   useEffect(() => {
     async function fetchData() {
@@ -203,9 +207,16 @@ export default function ItemsPage({ onBack }) {
     }
   }
 
+  // Filter items
+  const filteredItems = items.filter(item => {
+    const matchesSearch = item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesCategory = categoryFilter ? item.category === categoryFilter : true
+    return matchesSearch && matchesCategory
+  })
+
   // Group items by category
   const groupedItems = CATEGORY_ORDER.reduce((acc, cat) => {
-    acc[cat] = items.filter(item => item.category === cat)
+    acc[cat] = filteredItems.filter(item => item.category === cat)
     return acc
   }, {})
 
@@ -241,6 +252,28 @@ export default function ItemsPage({ onBack }) {
           >
             Novo Item
           </button>
+        </div>
+
+        <div className="items-filters">
+          <input 
+            type="text" 
+            placeholder="Buscar alimento..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="items-filter-input"
+          />
+          <select 
+            value={categoryFilter} 
+            onChange={e => setCategoryFilter(e.target.value)}
+            className="items-filter-select"
+          >
+            <option value="">Todas as Categorias</option>
+            {CATEGORY_ORDER.map(cat => (
+              <option key={cat} value={cat}>
+                {cat.charAt(0).toUpperCase() + cat.slice(1)}
+              </option>
+            ))}
+          </select>
         </div>
 
         {loading && <div className="items-loading">Carregando itens...</div>}
