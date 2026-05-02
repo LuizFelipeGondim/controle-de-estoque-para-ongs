@@ -157,7 +157,11 @@ Acessível a partir do painel de Visão Geral, esta página lista todos os tipos
 - **Busca e Filtros Inteligentes**: Implementação de barra de busca textual e dropdown seletor de categorias, filtrando os resultados exibidos na tela de forma reativa e instantânea.
 - **Gestão de Itens (Criar e Editar)**: Inclusão de botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`. Conta também com funcionalidade de **Edição**, reaproveitando o mesmo modal com requisição `PUT /items/:id`.
 - **Exclusão Segura**: Opção de remover itens diretamente da lista, com trava de segurança que bloqueia a remoção de alimentos que ainda possuam lotes vinculados.
-- **Visualização Fixa Inteligente**: Cards de itens configurados com tamanho fixo para manter a proporção do Grid. A lista detalhada de lotes atrelados dentro do card agora conta com uma barra de rolagem (scroll interno) dinâmica.
+- **Interatividade Total (Card de Detalhes)**: Os cards de itens agora são clicáveis. Ao clicar, abre-se um modal expansivo (`item-modal-content--large`) que organiza as informações em:
+  - **Informações Gerais**: Categoria, Estoque Total Ativo, Nível de Segurança e Informação Nutricional.
+  - **Lotes Vinculados (Painel Lateral)**: Uma lista dedicada com rolagem interna que exibe todos os lotes ativos e vencidos para aquele item específico, permitindo uma conferência detalhada sem sair da página.
+  - **Ação de Edição**: Atalho direto para abrir o modal de edição do cadastro do item.
+- **Visualização Simplificada na Lista**: A listagem principal permanece limpa e organizada, focada em dados agregados, enquanto o detalhamento por lote foi movido para o modal interativo.
 - **Cálculo de Estoque Real**: O saldo total exibido nos cards contabiliza apenas as quantidades dos lotes que estão dentro do prazo de validade.
 - **Design Agrupado**: Agrupamento por categorias de alimentos direto no fluxo de visualização, sempre renderizando as chaves capitalizadas.
 

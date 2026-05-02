@@ -57,6 +57,7 @@ export default function ItemsPage({ onBack }) {
 
   // ====== Form / Modal States ======
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [viewingItem, setViewingItem] = useState(null)
   const [editingItemId, setEditingItemId] = useState(null)
   const [formData, setFormData] = useState({
     name: '', category: 'outros', unit_of_measure: 'kg',
@@ -65,7 +66,7 @@ export default function ItemsPage({ onBack }) {
   const [formLoading, setFormLoading] = useState(false)
   const [formError, setFormError] = useState(null)
   const [actionError, setActionError] = useState(null)
-  
+
   // Filter states
   const [searchTerm, setSearchTerm] = useState('')
   const [categoryFilter, setCategoryFilter] = useState('')
@@ -183,7 +184,7 @@ export default function ItemsPage({ onBack }) {
   const handleDeleteItem = async (itemId) => {
     setActionError(null)
 
-    if (!window.confirm("Você tem certeza que deseja excluir este alimento do inventário?")) {
+    if (!window.confirm("Você tem certeza que deseja excluir este item do inventário?")) {
       return
     }
 
@@ -255,15 +256,15 @@ export default function ItemsPage({ onBack }) {
         </div>
 
         <div className="items-filters">
-          <input 
-            type="text" 
-            placeholder="Buscar alimento..." 
+          <input
+            type="text"
+            placeholder="Buscar Item..."
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
             className="items-filter-input"
           />
-          <select 
-            value={categoryFilter} 
+          <select
+            value={categoryFilter}
             onChange={e => setCategoryFilter(e.target.value)}
             className="items-filter-select"
           >
@@ -302,30 +303,18 @@ export default function ItemsPage({ onBack }) {
               </h2>
               <div className="items-grid">
                 {catItems.map(item => (
-                  <div key={item.id} className="item-card">
+                  <div
+                    key={item.id}
+                    className="item-card"
+                    onClick={() => setViewingItem(item)}
+                    style={{ cursor: 'pointer' }}
+                  >
                     <div className="item-card__header">
                       <div className="item-card__title-box">
                         <h3 className="item-card__name">{item.name}</h3>
                         {item.is_essential ? (
                           <span className="item-card__badge" aria-label="Item essencial">Essencial</span>
                         ) : null}
-                      </div>
-                      <div className="item-card__actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <button
-                          className="item-card__edit-btn"
-                          onClick={() => openEditModal(item)}
-                          title="Editar Item"
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)' }}
-                        >
-                          ✎
-                        </button>
-                        <button
-                          className="item-card__delete-btn"
-                          onClick={() => handleDeleteItem(item.id)}
-                          title="Remover Item"
-                        >
-                          &times;
-                        </button>
                       </div>
                     </div>
                     <div className="item-card__body">
@@ -343,50 +332,6 @@ export default function ItemsPage({ onBack }) {
                       {item.nutritional_info && (
                         <p>Info: <span>{item.nutritional_info}</span></p>
                       )}
-
-                      <div className="item-card__batches">
-                        {(() => {
-                          const itemBatches = batches.filter(b => b.item_type_id === item.id && b.status !== 'esgotado');
-                          const today = new Date();
-
-                          const validBatches = itemBatches.filter(b => new Date(b.expiration_date) >= today);
-                          const expiredBatches = itemBatches.filter(b => new Date(b.expiration_date) < today);
-
-                          if (itemBatches.length === 0) {
-                            return <p className="item-card__no-batches">Nenhum lote disponível.</p>;
-                          }
-
-                          return (
-                            <>
-                              {/* Lotes Ativos */}
-                              {validBatches.length > 0 && (
-                                <div className="batch-section">
-                                  <h4 className="item-card__batches-title">Lotes Ativos</h4>
-                                  <ul className="item-card__batch-list" role="list">
-                                    {validBatches.map(b => (
-                                      <BatchItem key={b.id} b={b} unit={item.unit_of_measure} />
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-
-                              {/* Lotes Vencidos */}
-                              {expiredBatches.length > 0 && (
-                                <div className="batch-section batch-section--expired">
-                                  <h4 className="item-card__batches-title item-card__batches-title--expired">
-                                    Lotes Vencidos ⚠️
-                                  </h4>
-                                  <ul className="item-card__batch-list" role="list">
-                                    {expiredBatches.map(b => (
-                                      <BatchItem key={b.id} b={b} unit={item.unit_of_measure} isExpired />
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </>
-                          );
-                        })()}
-                      </div>
                     </div>
                   </div>
                 ))}
@@ -395,6 +340,109 @@ export default function ItemsPage({ onBack }) {
           )
         })}
       </main>
+
+      {/* ══ Viewing Modal ══ */}
+      {viewingItem && (
+        <div className="item-modal-overlay" onClick={() => setViewingItem(null)}>
+          <div className="item-modal-content item-modal-content--large" onClick={e => e.stopPropagation()}>
+            <header className="item-modal-content__header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--spacing-md)' }}>
+                <span style={{ fontSize: '1.8rem' }}>{CATEGORY_EMOJIS[viewingItem.category] || "📦"}</span>
+                <h2>{viewingItem.name}</h2>
+              </div>
+              <button className="item-modal-content__close" onClick={() => setViewingItem(null)}>&times;</button>
+            </header>
+
+            <div className="item-modal-body--detailed">
+              <div className="item-details-grid">
+                <div className="item-details-main">
+                  <h3 className="details-section-title">Informações Gerais</h3>
+                  <div className="details-info-list">
+                    <div className="details-info-item">
+                      <span className="details-label">Categoria:</span>
+                      <span className="details-value" style={{ textTransform: 'capitalize' }}>{viewingItem.category}</span>
+                    </div>
+                    <div className="details-info-item">
+                      <span className="details-label">Estoque Total:</span>
+                      <span className="details-value" style={{ fontWeight: 700, color: 'var(--color-primary-light)' }}>
+                        {batches
+                          .filter(b => b.item_type_id === viewingItem.id && b.status !== 'esgotado' && new Date(b.expiration_date) >= new Date())
+                          .reduce((sum, b) => sum + b.current_quantity, 0)} {viewingItem.unit_of_measure}
+                      </span>
+                    </div>
+                    <div className="details-info-item">
+                      <span className="details-label">Mínimo de Segurança:</span>
+                      <span className="details-value">{viewingItem.min_stock_level} {viewingItem.unit_of_measure}</span>
+                    </div>
+                    <div className="details-info-item">
+                      <span className="details-label">Informação Nutricional:</span>
+                      <span className="details-value">{viewingItem.nutritional_info || "Nenhuma informação cadastrada."}</span>
+                    </div>
+                  </div>
+
+                  <div className="details-actions-footer">
+                    <button
+                      className="details-edit-btn"
+                      onClick={() => {
+                        const itemToEdit = viewingItem;
+                        setViewingItem(null);
+                        openEditModal(itemToEdit);
+                      }}
+                    >
+                      ✎ Editar Cadastro
+                    </button>
+                    <button
+                      className="details-delete-btn"
+                      onClick={() => {
+                        const idToDelete = viewingItem.id;
+                        setViewingItem(null);
+                        handleDeleteItem(idToDelete);
+                      }}
+                    >
+                      &times; Remover Item
+                    </button>
+                  </div>
+                </div>
+
+                <div className="item-details-side">
+                  <h3 className="details-section-title">Lotes Vinculados</h3>
+                  <div className="details-batches-list">
+                    {(() => {
+                      const itemBatches = batches.filter(b => b.item_type_id === viewingItem.id && b.status !== 'esgotado');
+                      if (itemBatches.length === 0) return <p className="details-empty-msg">Nenhum lote disponível.</p>;
+
+                      const today = new Date();
+                      const valid = itemBatches.filter(b => new Date(b.expiration_date) >= today);
+                      const expired = itemBatches.filter(b => new Date(b.expiration_date) < today);
+
+                      return (
+                        <>
+                          {valid.length > 0 && (
+                            <div className="details-batch-group">
+                              <h4 className="details-group-subtitle">Lotes Ativos</h4>
+                              <ul className="details-batch-ul">
+                                {valid.map(b => <BatchItem key={b.id} b={b} unit={viewingItem.unit_of_measure} />)}
+                              </ul>
+                            </div>
+                          )}
+                          {expired.length > 0 && (
+                            <div className="details-batch-group">
+                              <h4 className="details-group-subtitle details-group-subtitle--expired">Lotes Vencidos ⚠️</h4>
+                              <ul className="details-batch-ul">
+                                {expired.map(b => <BatchItem key={b.id} b={b} unit={viewingItem.unit_of_measure} isExpired />)}
+                              </ul>
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ══ Modal Novo Item ══ */}
       {isModalOpen && (
@@ -415,7 +463,7 @@ export default function ItemsPage({ onBack }) {
               {formError && <div className="item-modal-form__error">{formError}</div>}
 
               <div className="item-modal-form__group">
-                <label htmlFor="name">Nome do Alimento *</label>
+                <label htmlFor="name">Nome do Item *</label>
                 <input
                   type="text" id="name" name="name"
                   required value={formData.name} onChange={handleInputChange}
