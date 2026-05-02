@@ -32,6 +32,10 @@ export default function DonationsPage({ onBack }) {
     notes: ''
   })
 
+  // Filter states
+  const [searchTerm, setSearchTerm] = useState('')
+  const [filterDate, setFilterDate] = useState('')
+
   useEffect(() => {
     fetchPackets()
   }, [])
@@ -459,6 +463,31 @@ export default function DonationsPage({ onBack }) {
           <button className="donations-header__new-btn" onClick={() => setIsModalOpen(true)}>Novo Pacote</button>
         </div>
 
+        <div className="donations-filters">
+          <input 
+            type="text" 
+            placeholder="Buscar por destino..." 
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+            className="donations-filter-input"
+          />
+          <input 
+            type="date" 
+            value={filterDate}
+            onChange={e => setFilterDate(e.target.value)}
+            className="donations-filter-date"
+            title="Filtrar por data"
+          />
+          {(searchTerm || filterDate) && (
+            <button 
+              className="donations-filter-clear"
+              onClick={() => { setSearchTerm(''); setFilterDate(''); }}
+            >
+              Limpar Filtros
+            </button>
+          )}
+        </div>
+
         {isModalOpen && (
           <div className="donation-modal-overlay" onClick={() => setIsModalOpen(false)}>
             <div className="donation-modal-content" onClick={e => e.stopPropagation()}>
@@ -493,31 +522,37 @@ export default function DonationsPage({ onBack }) {
         {loading && <div className="donations-loading">Carregando...</div>}
 
         <div className="donations-grid">
-          {packets.map(packet => {
-            const date = new Date(packet.donation_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
-            return (
-              <div key={packet.id} className={`packet-card packet-card--${packet.status}`}>
-                <div className="packet-card__header">
-                  <span className={`packet-status packet-status--${packet.status}`}>{packet.status}</span>
-                  <div className="packet-header-right">
-                    <span className="packet-date">{date}</span>
-                    {packet.status === 'preparando' && (
-                      <button className="packet-delete-btn" onClick={() => handleDeletePacket(packet.id)}>&times;</button>
-                    )}
+          {packets
+            .filter(p => {
+              const matchesSearch = p.destination.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesDate = filterDate ? p.donation_date.startsWith(filterDate) : true;
+              return matchesSearch && matchesDate;
+            })
+            .map(packet => {
+              const date = new Date(packet.donation_date).toLocaleDateString('pt-BR', { timeZone: 'UTC' })
+              return (
+                <div key={packet.id} className={`packet-card packet-card--${packet.status}`}>
+                  <div className="packet-card__header">
+                    <span className={`packet-status packet-status--${packet.status}`}>{packet.status}</span>
+                    <div className="packet-header-right">
+                      <span className="packet-date">{date}</span>
+                      {packet.status === 'preparando' && (
+                        <button className="packet-delete-btn" onClick={() => handleDeletePacket(packet.id)}>&times;</button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="packet-card__body">
+                    <h3 className="packet-destination">{packet.destination}</h3>
+                    <p className="packet-address">{packet.destination_address || 'Endereço não informado'}</p>
+                  </div>
+                  <div className="packet-card__footer">
+                    <button className="packet-action-btn" onClick={() => { setSelectedPacket(packet); setView('manage-items'); fetchPacketItems(packet.id); }}>
+                      {packet.status === 'preparando' ? 'Gerenciar Itens' : 'Ver Detalhes'}
+                    </button>
                   </div>
                 </div>
-                <div className="packet-card__body">
-                  <h3 className="packet-destination">{packet.destination}</h3>
-                  <p className="packet-address">{packet.destination_address || 'Endereço não informado'}</p>
-                </div>
-                <div className="packet-card__footer">
-                  <button className="packet-action-btn" onClick={() => { setSelectedPacket(packet); setView('manage-items'); fetchPacketItems(packet.id); }}>
-                    {packet.status === 'preparando' ? 'Gerenciar Itens' : 'Ver Detalhes'}
-                  </button>
-                </div>
-              </div>
-            )
-          })}
+              )
+            })}
         </div>
       </main>
     </div>
