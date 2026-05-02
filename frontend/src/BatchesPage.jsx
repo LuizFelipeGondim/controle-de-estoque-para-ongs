@@ -20,6 +20,11 @@ export default function BatchesPage({ onBack }) {
   // order options: 'exp_asc', 'exp_desc', 'entry_desc', 'entry_asc'
   const [sortOption, setSortOption] = useState('exp_asc')
 
+  // Filter states
+  const [filterText, setFilterText] = useState('')
+  const [filterCategory, setFilterCategory] = useState('')
+  const [filterExpDate, setFilterExpDate] = useState('')
+
   useEffect(() => {
     async function fetchData() {
       try {
@@ -130,8 +135,21 @@ export default function BatchesPage({ onBack }) {
   }
 
   const groupedBatches = useMemo(() => {
+    // 0. Filter batches
+    const filteredBatches = batches.filter(b => {
+      const matchesText = filterText ? b.item_name.toLowerCase().includes(filterText.toLowerCase()) : true;
+      const matchesCat = filterCategory ? b.item_category === filterCategory : true;
+      let matchesExpDate = true;
+      if (filterExpDate) {
+        const expDate = new Date(b.expiration_date);
+        const filterDate = new Date(filterExpDate + 'T23:59:59');
+        matchesExpDate = expDate <= filterDate;
+      }
+      return matchesText && matchesCat && matchesExpDate;
+    });
+
     // 1. Sort all batches by entry date (newest first)
-    const sorted = [...batches].sort((a, b) => {
+    const sorted = [...filteredBatches].sort((a, b) => {
       const entryA = new Date(a.entry_date || a.created_at || 0).getTime()
       const entryB = new Date(b.entry_date || b.created_at || 0).getTime()
       return entryB - entryA || a.item_name.localeCompare(b.item_name)
@@ -149,7 +167,7 @@ export default function BatchesPage({ onBack }) {
 
     // 3. Convert to array and sort groups by date descending
     return Object.entries(groups).sort(([dateA], [dateB]) => dateB.localeCompare(dateA))
-  }, [batches])
+  }, [batches, filterText, filterCategory, filterExpDate])
 
   const formatDateDesc = (dateIso) => {
     const date = new Date(dateIso + 'T12:00:00') // Avoid timezone shifts
@@ -192,8 +210,37 @@ export default function BatchesPage({ onBack }) {
           </button>
         </div>
 
-        <div className="batches-sort-info">
+        <div className="batches-sort-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
           <p>Lotes agrupados por data de entrada no estoque</p>
+          <div className="batches-filters" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            <input 
+              type="text" 
+              placeholder="Buscar por alimento..." 
+              value={filterText}
+              onChange={e => setFilterText(e.target.value)}
+              className="batches-filter-input"
+            />
+            <select 
+              value={filterCategory} 
+              onChange={e => setFilterCategory(e.target.value)}
+              className="batches-filter-select"
+            >
+              <option value="">Todas as categorias</option>
+              {[...new Set(items.map(i => i.category))].sort().map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>Vence até:</span>
+              <input 
+                type="date" 
+                value={filterExpDate}
+                onChange={e => setFilterExpDate(e.target.value)}
+                className="batches-filter-input"
+                style={{ width: 'auto' }}
+              />
+            </div>
+          </div>
         </div>
 
         {loading && <div className="batches-loading">Carregando lotes...</div>}
@@ -213,7 +260,7 @@ export default function BatchesPage({ onBack }) {
         {!loading && !error && groupedBatches.length > 0 && (
           <div className="batches-list-container">
             {groupedBatches.map(([dateKey, itemsInDate]) => {
-              const totalQtyInDay = itemsInDate.reduce((sum, b) => sum + b.initial_quantity, 0)
+              const totalQtyInDay = itemsInDate.reduce((sum, b) => sum + Number(b.initial_quantity), 0)
 
               return (
                 <section key={dateKey} className="batch-date-group">
@@ -231,7 +278,8 @@ export default function BatchesPage({ onBack }) {
                     <div className="batches-table__head">
                       <div className="col-item">Alimento</div>
                       <div className="col-cat">Categoria</div>
-                      <div className="col-qty">Quantidade</div>
+                      <div className="col-qty">Qtd. Inicial</div>
+                      <div className="col-qty">Qtd. Atual</div>
                       <div className="col-exp">Validade</div>
                       <div className="col-status">Status</div>
                       <div className="col-actions"></div>
@@ -259,7 +307,11 @@ export default function BatchesPage({ onBack }) {
                               <span className="cat-tag">{batch.item_category}</span>
                             </div>
                             <div className="col-qty">
-                              <span className="qty-val">{batch.current_quantity.toFixed(1)}</span>
+                              <span className="qty-val">{Number(batch.initial_quantity).toFixed(1)}</span>
+                              <span className="qty-unit">{batch.item_unit_of_measure}</span>
+                            </div>
+                            <div className="col-qty">
+                              <span className="qty-val">{Number(batch.current_quantity).toFixed(1)}</span>
                               <span className="qty-unit">{batch.item_unit_of_measure}</span>
                             </div>
                             <div className="col-exp">

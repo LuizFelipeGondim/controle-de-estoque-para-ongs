@@ -159,13 +159,13 @@ Acessível a partir do painel de Visão Geral, esta página lista todos os tipos
 
 ### Visualização de Lotes — `BatchesPage` (concluída e integrada)
 Página dedicada à gestão refinada das doações recebidas no estoque:
-- **Design Premium**: Visualização em grade de cards com efeitos **Glassmorphism** e animações de entrada.
-- **Agrupamento por Item**: Os lotes são agrupados automaticamente pelo nome do alimento, exibindo o saldo acumulado por tipo no cabeçalho de cada seção.
-- **Inteligência de Vencimento**: Indicadores de urgência para lotes que vencem em menos de 5 dias (barra de acento amarela e tag "Urgente") e lotes vencidos.
-- **Interação Dinâmica**: Efeitos de *hover* nos cards que alteram a cor da sombra e borda de acordo com o nível de urgência (verde, amarelo ou vermelho).
-- **Gestão de Lotes**: Inclusão de botão de exclusão em cada lote, com remoção instantânea do estado local e recálculo automático de saldos.
-- **Adição Integrada (Modal)**: O processo de "Adicionar Lote" foi movido para dentro desta página através de um modal flutuante.
-- **Ordenação Dinâmica**: Permite ordenar lotes por data de vencimento (asc/desc) e data de entrada (asc/desc) dentro de cada grupo.
+- **Design Premium em Tabela**: Layout atualizado para uma lista flexível de linhas estruturadas, mantendo os efeitos **Glassmorphism**, fundos translúcidos e animações suaves.
+- **Agrupamento por Data de Entrada**: Os lotes agora são agrupados automaticamente pelos dias em que foram recebidos no estoque, exibindo no cabeçalho o total recebido naquela data.
+- **Busca e Filtros Dinâmicos**: Campos de busca por nome de alimento, filtro por categoria e seleção de **data limite de validade** integrados no painel superior, recalculando grupos vazios dinamicamente.
+- **Colunas de Quantidade Detalhadas**: Visualização clara dividindo a "Quantidade Inicial" (o que entrou no estoque) e a "Quantidade Atual" (o que ainda resta após doações).
+- **Inteligência de Vencimento**: Status visuais em *pills* coloridas ("Disponível", "Vencido", "Esgotado") baseados no tempo até o vencimento.
+- **Gestão de Lotes**: Inclusão de botão de exclusão em cada lote, com recálculo automático de saldos e tratamento de dependências do banco.
+- **Adição Integrada (Modal)**: O processo de "Adicionar Lote" acontece nativamente na página através de um modal flutuante imersivo.
 
 ### Sistema de Autenticação e Backend (Integrado)
 O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança (CORS) foram expandidas para permitir explicitamente os métodos `GET`, `POST`, `PATCH`, `DELETE` e `OPTIONS`, assegurando a funcionalidade completa de gestão de dados.

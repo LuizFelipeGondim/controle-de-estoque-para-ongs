@@ -141,6 +141,29 @@
   border: 1px solid var(--color-border);
 }
 
+.batches-filter-input,
+.batches-filter-select {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--color-border);
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-full);
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  outline: none;
+  transition: all var(--transition-base);
+}
+
+.batches-filter-input:focus,
+.batches-filter-select:focus {
+  border-color: var(--color-primary-light);
+  background: rgba(46, 160, 106, 0.05);
+}
+
+.batches-filter-select option {
+  background: var(--color-bg-card);
+  color: var(--color-text-primary);
+}
+
 /* Batches List & Groups */
 .batches-list-container {
   display: flex;
@@ -205,7 +228,7 @@
 
 .batches-table__head {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 60px;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 60px;
   padding: var(--spacing-sm) var(--spacing-xl);
   font-size: 0.7rem;
   font-weight: 800;
@@ -225,7 +248,7 @@
 /* Batch Row */
 .batch-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 60px;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 60px;
   align-items: center;
   padding: var(--spacing-md) var(--spacing-xl);
   background: rgba(255, 255, 255, 0.02);
