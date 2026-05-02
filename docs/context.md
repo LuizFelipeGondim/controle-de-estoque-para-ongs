@@ -167,6 +167,12 @@ Página dedicada à gestão refinada das doações recebidas no estoque:
 - **Gestão de Lotes**: Inclusão de botão de exclusão em cada lote, com recálculo automático de saldos e tratamento de dependências do banco.
 - **Adição Integrada (Modal)**: O processo de "Adicionar Lote" acontece nativamente na página através de um modal flutuante imersivo.
 
+### Gestão de Doações — `DonationsPage` (concluída e integrada)
+Página responsável por registrar e monitorar a saída de itens do estoque:
+- **Criação de Pacotes**: Permite gerenciar o destino, data de entrega e observações da doação.
+- **Inclusão Segura de Itens**: O modal de seleção de estoque filtra inteligentemente os dados e impede totalmente o uso de lotes vencidos na montagem de pacotes.
+- **Rastreabilidade e Estorno**: Permite gerenciar itens internamente, bem como cancelar o pacote inteiro, realizando o estorno automático das quantidades aos lotes originais no banco de dados.
+
 ### Sistema de Autenticação e Backend (Integrado)
 O roteamento de login interage em fluxo constante com o backend com uso de cookies para gerenciar os tokens de sessão (`credentials: 'include'`). As liberações de segurança (CORS) foram expandidas para permitir explicitamente os métodos `GET`, `POST`, `PATCH`, `DELETE` e `OPTIONS`, assegurando a funcionalidade completa de gestão de dados.
 

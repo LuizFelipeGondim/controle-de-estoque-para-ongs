@@ -91,7 +91,16 @@ export default function DonationsPage({ onBack }) {
       })
       if (!response.ok) throw new Error('Falha ao buscar lotes disponíveis.')
       const data = await response.json()
-      setAvailableBatches(data)
+      
+      const today = new Date();
+      const validBatches = data.filter(batch => {
+        const expTime = new Date(batch.expiration_date);
+        const diffTime = expTime - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays >= 0;
+      });
+
+      setAvailableBatches(validBatches)
     } catch (err) {
       setActionError(err.message)
     } finally {
@@ -342,7 +351,7 @@ export default function DonationsPage({ onBack }) {
                         setSelectedBatch(batch);
                       }}
                     >
-                      <option value="" disabled>Escolha um alimento disponível</option>
+                      <option value="" disabled>Escolha um alimento válido e disponível</option>
                       {availableBatches.map(batch => (
                         <option key={batch.id} value={batch.id}>
                           {batch.item_name} (Val: {new Date(batch.expiration_date).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}) - Disp: {batch.current_quantity} {batch.item_unit_of_measure}
