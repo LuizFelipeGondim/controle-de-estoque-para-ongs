@@ -176,6 +176,7 @@
   flex-direction: column;
   gap: var(--spacing-sm);
   transition: all var(--transition-base);
+  height: 420px;
 }
 
 .item-card:hover {
@@ -245,6 +246,8 @@
   flex-direction: column;
   gap: 0.3rem;
   margin-top: var(--spacing-xs);
+  flex: 1;
+  overflow: hidden;
 }
 
 .item-card__body span {
@@ -255,6 +258,20 @@
   margin-top: var(--spacing-sm);
   padding-top: var(--spacing-sm);
   border-top: 1px dashed var(--color-border);
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.item-card__batches::-webkit-scrollbar {
+  width: 4px;
+}
+
+.item-card__batches::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .item-card__batches-title {
