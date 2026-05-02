@@ -315,6 +315,7 @@
 .so-alert-item__cat {
   font-size: 0.75rem;
   color: var(--color-text-muted);
+  text-transform: capitalize;
 }
 
 .so-alert-item__days {
@@ -411,6 +412,7 @@
   font-weight: 700;
   color: var(--color-text-secondary);
   letter-spacing: 0.02em;
+  text-transform: capitalize;
 }
 
 .so-cat-card__kg {
@@ -588,6 +590,7 @@
 .impact-chart__cat {
   font-weight: 600;
   color: var(--color-text-secondary);
+  text-transform: capitalize;
 }
 
 .impact-chart__val {
