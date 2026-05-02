@@ -16,7 +16,7 @@ const CATEGORY_EMOJIS = {
   "outros": "📦"
 };
 
-export default function BatchesPage({ onBack }) {
+export default function BatchesPage({ onBack, initialBatchId, onClearInitialBatch }) {
   const [batches, setBatches] = useState([])
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -65,6 +65,17 @@ export default function BatchesPage({ onBack }) {
 
     fetchData();
   }, [])
+
+  // Handle deep link from Overview
+  useEffect(() => {
+    if (initialBatchId && batches.length > 0) {
+      const targetBatch = batches.find(b => b.id === initialBatchId)
+      if (targetBatch) {
+        setViewingBatch(targetBatch)
+        if (onClearInitialBatch) onClearInitialBatch()
+      }
+    }
+  }, [initialBatchId, batches, onClearInitialBatch])
 
   const handleAddBatch = async (e) => {
     e.preventDefault()

@@ -141,7 +141,7 @@ Página de destino após o login. Composta por seções dinâmicas que fornecem 
 Painéis automáticos de tamanho fixo com rolagem interna inteligente (scroll), empilhamento responsivo, e cores de urgência. Alertam sobre:
 - *Validade Próxima* — lista lotes com vencimento iminente (até 15 dias).
 - *Estoque Crítico* — lista itens operando abaixo da quantidade mínima segura.
-- *Lotes Vencidos* — painel em destaque vermelho listando lotes expirados que precisam de atenção imediata.
+- *Lotes Vencidos* — painel em destaque vermelho listando lotes expirados. **Novidade**: Os itens desta lista agora são clicáveis (`deep linking`), levando o usuário diretamente ao card de detalhes do lote na página de Lotes.
 
 **Seção 2 — 📦 Estoque por Categoria**
 Grid de cards que exibe o saldo atual em tempo real por tipo de alimento, incluindo a exibição dinâmica da **unidade de medida**. Adicionalmente, todas as categorias recebem tratamento visual com primeira letra maiúscula (*Capitalize*) para melhor legibilidade.
@@ -164,11 +164,15 @@ Acessível a partir do painel de Visão Geral, esta página lista todos os tipos
 ### Visualização de Lotes — `BatchesPage` (concluída e integrada)
 Página dedicada à gestão refinada das doações recebidas no estoque:
 - **Design Premium em Tabela**: Layout atualizado para uma lista flexível de linhas estruturadas, mantendo os efeitos **Glassmorphism**, fundos translúcidos e animações suaves.
+- **Interatividade Total (Card de Detalhes)**: Cada linha da tabela de lotes agora é clicável. Ao clicar, abre-se um modal expansivo (`batch-modal-content--large`) com:
+  - **Detalhes do Lote**: Status (Disponível/Vencido/Esgotado), Qtd. Inicial vs Atual, e datas formatadas.
+  - **Informações do Item**: Card lateral integrado exibindo ícone da categoria, unidade de medida e nível de estoque mínimo do alimento atrelado.
+  - **Ações Rápidas**: Opção de **Excluir Lote** movida para dentro do modal para evitar cliques acidentais na listagem principal.
+- **Emojis Dinâmicos**: Utilização de ícones visuais baseados na categoria do alimento (ex: 🌾 para cereais, 🥩 para proteínas) tanto na lista quanto no modal.
 - **Agrupamento por Data de Entrada**: Os lotes agora são agrupados automaticamente pelos dias em que foram recebidos no estoque, exibindo no cabeçalho o total recebido naquela data.
-- **Busca e Filtros Dinâmicos**: Campos de busca por nome de alimento, filtro por categoria e seleção de **data limite de validade** integrados no painel superior, recalculando grupos vazios dinamicamente.
-- **Colunas de Quantidade Detalhadas**: Visualização clara dividindo a "Quantidade Inicial" (o que entrou no estoque) e a "Quantidade Atual" (o que ainda resta após doações).
-- **Inteligência de Vencimento**: Status visuais em *pills* coloridas ("Disponível", "Vencido", "Esgotado") baseados no tempo até o vencimento.
-- **Gestão de Lotes**: Inclusão de botão de exclusão em cada lote, com recálculo automático de saldos e tratamento de dependências do banco.
+- **Busca e Filtros Dinâmicos**: Campos de busca por nome de alimento, filtro por categoria e seleção de **data limite de validade** integrados no painel superior.
+- **Colunas de Quantidade Detalhadas**: Visualização clara dividindo a "Quantidade Inicial" e a "Quantidade Atual".
+- **Gestão de Lotes**: Exclusão segura integrada com confirmação e recálculo de saldos.
 - **Adição Integrada (Modal)**: O processo de "Adicionar Lote" acontece nativamente na página através de um modal flutuante imersivo.
 
 ### Gestão de Doações — `DonationsPage` (concluída e integrada)

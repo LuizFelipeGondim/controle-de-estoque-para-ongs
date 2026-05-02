@@ -348,6 +348,16 @@
   background: rgba(255, 255, 255, 0.02);
 }
 
+.so-alert-item--clickable {
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.so-alert-item--clickable:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  transform: translateX(4px);
+}
+
 .so-alert-item__info {
   display: flex;
   flex-direction: column;

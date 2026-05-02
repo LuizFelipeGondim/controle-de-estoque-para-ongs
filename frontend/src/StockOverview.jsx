@@ -292,7 +292,12 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
                   ) : (
                     <ul className="so-alert-list" role="list">
                       {expiredAlerts.map((b, i) => (
-                        <li key={i} className="so-alert-item so-alert-item--urgent">
+                        <li 
+                          key={i} 
+                          className="so-alert-item so-alert-item--urgent so-alert-item--clickable"
+                          onClick={() => onViewBatches(b.id)}
+                          title="Clique para ver detalhes do lote"
+                        >
                           <div className="so-alert-item__info">
                             <span className="so-alert-item__name">{b.item_name}</span>
                             <span className="so-alert-item__cat">{b.item_category} • {b.current_quantity}{b.item_unit_of_measure}</span>

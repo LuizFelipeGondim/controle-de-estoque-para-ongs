@@ -8,12 +8,16 @@ import HistoryPage from './HistoryPage'
 
 export default function App() {
   const [page, setPage] = useState('login')
+  const [selectedBatchId, setSelectedBatchId] = useState(null)
 
   if (page === 'stock') {
     return <StockOverview 
       onLogout={() => setPage('login')} 
       onViewItems={() => setPage('items')} 
-      onViewBatches={() => setPage('batches')}
+      onViewBatches={(batchId) => {
+        setSelectedBatchId(batchId)
+        setPage('batches')
+      }}
       onViewDonations={() => setPage('donations')}
       onViewHistory={() => setPage('history')}
     />
@@ -24,7 +28,11 @@ export default function App() {
   }
 
   if (page === 'batches') {
-    return <BatchesPage onBack={() => setPage('stock')} />
+    return <BatchesPage 
+      initialBatchId={selectedBatchId} 
+      onClearInitialBatch={() => setSelectedBatchId(null)}
+      onBack={() => setPage('stock')} 
+    />
   }
 
   if (page === 'donations') {
