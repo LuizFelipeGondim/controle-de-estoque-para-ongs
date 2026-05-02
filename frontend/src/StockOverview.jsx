@@ -61,6 +61,7 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
   const [receivedImpact, setReceivedImpact] = useState({ total: 0, byCategory: [] });
   const [donatedImpact, setDonatedImpact] = useState({ total: 0, byCategory: [] });
   const [expiringAlerts, setExpiringAlerts] = useState([]);
+  const [expiredAlerts, setExpiredAlerts] = useState([]);
   const [criticalAlerts, setCriticalAlerts] = useState([]);
   const [categoryStats, setCategoryStats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -88,18 +89,25 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
         const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
         // 1. Alertas de Validade
-        const expiring = batches
+        const activeBatchesWithDays = batches
           .filter(b => b.status !== 'esgotado')
           .map(b => {
             const expDate = new Date(b.expiration_date);
             const diffTime = expDate - today;
             const daysLeft = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
             return { ...b, daysLeft };
-          })
+          });
+
+        const expiring = activeBatchesWithDays
           .filter(b => b.daysLeft >= 0 && b.daysLeft <= 15)
           .sort((a, b) => a.daysLeft - b.daysLeft);
 
+        const expired = activeBatchesWithDays
+          .filter(b => b.daysLeft < 0)
+          .sort((a, b) => a.daysLeft - b.daysLeft);
+
         setExpiringAlerts(expiring);
+        setExpiredAlerts(expired);
 
         // 2. Estoque Crítico
         const itemTotals = items.map(item => {
@@ -251,16 +259,45 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
                     </span>
                   </div>
                   {criticalAlerts.length === 0 ? (
-                    <p className="so-alert-panel__empty">✅ Todos os itens estão acima do mínimo.</p>
+                    <p className="so-alert-panel__empty">✅ Todo o estoque está acima do mínimo exigido.</p>
                   ) : (
                     <ul className="so-alert-list" role="list">
-                      {criticalAlerts.map((item, i) => (
+                      {criticalAlerts.map((item, i) => {
+                        const pct = (item.totalQty / item.min_stock_level) * 100;
+                        return (
+                          <li key={i} className="so-alert-item so-alert-item--urgent">
+                            <div className="so-alert-item__info">
+                              <span className="so-alert-item__name">{CATEGORY_EMOJIS[item.category] || "📦"} {item.name}</span>
+                              <span className="so-alert-item__cat">{item.category}</span>
+                            </div>
+                            <span className="so-alert-item__days">{pct.toFixed(0)}% do min.</span>
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                </div>
+
+                {/* Lotes vencidos */}
+                <div className="so-alert-panel so-alert-panel--expired">
+                  <div className="so-alert-panel__header">
+                    <span aria-hidden="true">🗑️</span>
+                    <span>Lotes Vencidos</span>
+                    <span className="so-alert-panel__count so-alert-panel__count--expired" aria-label={`${expiredAlerts.length} lotes`}>
+                      {expiredAlerts.length}
+                    </span>
+                  </div>
+                  {expiredAlerts.length === 0 ? (
+                    <p className="so-alert-panel__empty">✅ Nenhum lote vencido no estoque.</p>
+                  ) : (
+                    <ul className="so-alert-list" role="list">
+                      {expiredAlerts.map((b, i) => (
                         <li key={i} className="so-alert-item so-alert-item--urgent">
                           <div className="so-alert-item__info">
-                            <span className="so-alert-item__name">{CATEGORY_EMOJIS[item.category] || "📦"} {item.name}</span>
-                            <span className="so-alert-item__cat">Mínimo: {item.min_stock_level} {item.unit_of_measure}</span>
+                            <span className="so-alert-item__name">{b.item_name}</span>
+                            <span className="so-alert-item__cat">{b.item_category} • {b.current_quantity}{b.item_unit_of_measure}</span>
                           </div>
-                          <span className="so-alert-item__days">{item.totalQty.toFixed(1)} {item.unit_of_measure} restante</span>
+                          <span className="so-alert-item__days">Vencido</span>
                         </li>
                       ))}
                     </ul>

@@ -202,7 +202,7 @@
 ================================================================ */
 .so-alerts-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: var(--spacing-lg);
 }
 
@@ -237,6 +237,11 @@
   color: var(--color-danger-light);
 }
 
+.so-alert-panel--expired .so-alert-panel__header {
+  background: rgba(255, 77, 77, 0.07);
+  color: #ff4d4d;
+}
+
 .so-alert-panel__count {
   margin-left: auto;
   min-width: 22px;
@@ -255,6 +260,11 @@
 .so-alert-panel__count--red {
   background: rgba(224, 90, 43, 0.2);
   color: var(--color-danger-light);
+}
+
+.so-alert-panel__count--expired {
+  background: rgba(255, 77, 77, 0.2);
+  color: #ff4d4d;
 }
 
 .so-alert-panel__empty {
