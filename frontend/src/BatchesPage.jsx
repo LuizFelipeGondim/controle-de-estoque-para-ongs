@@ -243,7 +243,6 @@ export default function BatchesPage({ onBack, initialBatchId, onClearInitialBatc
               <button 
                 className="batches-filter-clear"
                 onClick={() => { setFilterText(''); setFilterCategory(''); setFilterExpDate(''); }}
-                style={{ cursor: 'pointer', padding: '0.5rem', background: 'transparent', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)' }}
               >
                 Limpar Filtros
               </button>
