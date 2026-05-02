@@ -113,7 +113,7 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
 
         const critical = itemTotals
           .filter(item => item.totalQty < item.min_stock_level)
-          .sort((a, b) => (a.totalQty / item.min_stock_level) - (b.totalQty / item.min_stock_level));
+          .sort((a, b) => (a.totalQty / a.min_stock_level) - (b.totalQty / b.min_stock_level));
 
         setCriticalAlerts(critical);
 

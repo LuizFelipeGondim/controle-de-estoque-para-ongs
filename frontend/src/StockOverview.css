@@ -212,6 +212,9 @@
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  height: 320px;
 }
 
 .so-alert-panel__header {
@@ -264,6 +267,19 @@
 .so-alert-list {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.so-alert-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.so-alert-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 .so-alert-item {
