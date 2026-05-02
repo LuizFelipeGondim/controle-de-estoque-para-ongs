@@ -133,15 +133,15 @@ A tela principal do frontend é a página de login da **Área do Colaborador**. 
 ### Visão Geral dos Estoques — `StockOverview` (concluída e integrada)
 Página de destino após o login. Composta por seções dinâmicas que fornecem inteligência operacional em tempo real:
 
-**Header fixo** — logo ONGConecta e botão "Sair" (retorna à tela de login).
+**Header fixo** — logo ONGConecta, barra de navegação com acesso rápido (Histórico, Doações, Lotes, Itens) e botão "Sair" (retorna à tela de login).
 
 **Seção 1 — ⚠️ Avisos**
-Painéis automáticos que alertam sobre:
+Painéis automáticos de tamanho fixo com rolagem interna inteligente (scroll) que alertam sobre:
 - *Validade Próxima* — lista itens com vencimento iminente.
-- *Estoque Crítico* — lista categorias abaixo da quantidade mínima.
+- *Estoque Crítico* — lista itens abaixo da quantidade mínima.
 
 **Seção 2 — 📦 Estoque por Categoria**
-Grid de cards que exibe o saldo atual em tempo real por tipo de alimento, com barras de progresso visuais.
+Grid de cards que exibe o saldo atual em tempo real por tipo de alimento, incluindo a exibição dinâmica da **unidade de medida**. Adicionalmente, todas as categorias recebem tratamento visual com primeira letra maiúscula (*Capitalize*) para melhor legibilidade.
 
 **Seção 3 — 📊 Dashboard de Performance Mensal (Integrado)**
 Dividido em duas áreas de análise de impacto social:
@@ -151,11 +151,11 @@ Dividido em duas áreas de análise de impacto social:
 
 ### Página de Itens — `ItemsPage` (concluída e integrada)
 Acessível a partir do painel de Visão Geral, esta página lista todos os tipos de itens através de requisições HTTP em tempo real:
-- **Cadastro de Itens**: Inclui um botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`.
+- **Gestão de Itens (Criar e Editar)**: Inclusão de botão "Novo Item" que abre um modal de cadastro integrado ao `POST /items`. Conta também com funcionalidade de **Edição**, reaproveitando o mesmo modal com requisição `PUT /items/:id`.
 - **Exclusão Segura**: Opção de remover itens diretamente da lista, com trava de segurança que bloqueia a remoção de alimentos que ainda possuam lotes vinculados.
-- **Organização por Validade**: Cada card de item separa os lotes atrelados em duas seções ("Lotes Ativos" e "Lotes Vencidos ⚠️"), destacando visualmente itens expirados.
+- **Visualização Fixa Inteligente**: Cards de itens configurados com tamanho fixo para manter a proporção do Grid. A lista detalhada de lotes atrelados dentro do card agora conta com uma barra de rolagem (scroll interno) dinâmica.
 - **Cálculo de Estoque Real**: O saldo total exibido nos cards contabiliza apenas as quantidades dos lotes que estão dentro do prazo de validade.
-- **Design de Tabela Integrada**: Agrupamento por categorias de alimentos direto no fluxo de visualização.
+- **Design Agrupado**: Agrupamento por categorias de alimentos direto no fluxo de visualização, sempre renderizando as chaves capitalizadas.
 
 ### Visualização de Lotes — `BatchesPage` (concluída e integrada)
 Página dedicada à gestão refinada das doações recebidas no estoque:
