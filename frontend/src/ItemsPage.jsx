@@ -57,6 +57,7 @@ export default function ItemsPage({ onBack }) {
 
   // ====== Form / Modal States ======
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [editingItemId, setEditingItemId] = useState(null)
   const [formData, setFormData] = useState({
     name: '', category: 'outros', unit_of_measure: 'kg',
     min_stock_level: 0, is_essential: false, nutritional_info: ''
@@ -93,6 +94,30 @@ export default function ItemsPage({ onBack }) {
   }, [])
 
   // ====== Handlers ======
+  const openNewItemModal = () => {
+    setEditingItemId(null)
+    setFormData({
+      name: '', category: 'outros', unit_of_measure: 'kg',
+      min_stock_level: 0, is_essential: false, nutritional_info: ''
+    })
+    setFormError(null)
+    setIsModalOpen(true)
+  }
+
+  const openEditModal = (item) => {
+    setEditingItemId(item.id)
+    setFormData({
+      name: item.name,
+      category: item.category,
+      unit_of_measure: item.unit_of_measure,
+      min_stock_level: item.min_stock_level,
+      is_essential: Boolean(item.is_essential),
+      nutritional_info: item.nutritional_info || ''
+    })
+    setFormError(null)
+    setIsModalOpen(true)
+  }
+
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -107,22 +132,38 @@ export default function ItemsPage({ onBack }) {
     setFormError(null)
 
     try {
-      const response = await fetch(`${API_URL}/items`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
-        body: JSON.stringify({ ...formData, conversion_factor: 1 })
-      })
+      if (editingItemId) {
+        const response = await fetch(`${API_URL}/items/${editingItemId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ...formData, conversion_factor: 1 })
+        })
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}))
-        throw new Error(errData.message || 'Erro ao cadastrar novo item.')
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          throw new Error(errData.message || 'Erro ao atualizar item.')
+        }
+
+        setItems(prev => prev.map(item => item.id === editingItemId ? { ...item, ...formData } : item))
+      } else {
+        const response = await fetch(`${API_URL}/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({ ...formData, conversion_factor: 1 })
+        })
+
+        if (!response.ok) {
+          const errData = await response.json().catch(() => ({}))
+          throw new Error(errData.message || 'Erro ao cadastrar novo item.')
+        }
+
+        const newIdData = await response.json()
+        const newItem = { id: newIdData.id, ...formData, conversion_factor: 1 }
+        setItems(prev => [...prev, newItem])
       }
 
-      const newIdData = await response.json()
-      const newItem = { id: newIdData.id, ...formData, conversion_factor: 1 }
-
-      setItems(prev => [...prev, newItem])
       setIsModalOpen(false)
       setFormData({
         name: '', category: 'outros', unit_of_measure: 'kg',
@@ -196,7 +237,7 @@ export default function ItemsPage({ onBack }) {
           </div>
           <button
             className="items-header__new-btn"
-            onClick={() => setIsModalOpen(true)}
+            onClick={openNewItemModal}
           >
             Novo Item
           </button>
@@ -236,13 +277,23 @@ export default function ItemsPage({ onBack }) {
                           <span className="item-card__badge" aria-label="Item essencial">Essencial</span>
                         ) : null}
                       </div>
-                      <button
-                        className="item-card__delete-btn"
-                        onClick={() => handleDeleteItem(item.id)}
-                        title="Remover Item"
-                      >
-                        &times;
-                      </button>
+                      <div className="item-card__actions" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                        <button
+                          className="item-card__edit-btn"
+                          onClick={() => openEditModal(item)}
+                          title="Editar Item"
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '1.2rem', color: 'var(--color-text-muted)' }}
+                        >
+                          ✎
+                        </button>
+                        <button
+                          className="item-card__delete-btn"
+                          onClick={() => handleDeleteItem(item.id)}
+                          title="Remover Item"
+                        >
+                          &times;
+                        </button>
+                      </div>
                     </div>
                     <div className="item-card__body">
                       <p>Estoque Total Ativo: <span>{
@@ -317,7 +368,7 @@ export default function ItemsPage({ onBack }) {
         <div className="item-modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="item-modal-content" onClick={e => e.stopPropagation()}>
             <header className="item-modal-content__header">
-              <h2>Cadastrar Novo Item</h2>
+              <h2>{editingItemId ? 'Editar Item' : 'Cadastrar Novo Item'}</h2>
               <button
                 className="item-modal-content__close"
                 onClick={() => setIsModalOpen(false)}
@@ -390,7 +441,7 @@ export default function ItemsPage({ onBack }) {
               </div>
 
               <button type="submit" className="item-modal-form__submit" disabled={formLoading}>
-                {formLoading ? 'Salvando...' : 'Salvar Item'}
+                {formLoading ? 'Salvando...' : (editingItemId ? 'Salvar Alterações' : 'Salvar Item')}
               </button>
             </form>
           </div>
