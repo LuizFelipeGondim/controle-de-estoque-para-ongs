@@ -276,7 +276,7 @@ export default function ItemsPage({ onBack }) {
             ))}
           </select>
           {(searchTerm || categoryFilter) && (
-            <button 
+            <button
               className="items-filter-clear"
               onClick={() => { setSearchTerm(''); setCategoryFilter(''); }}
             >

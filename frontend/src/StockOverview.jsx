@@ -61,7 +61,6 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
   const [receivedImpact, setReceivedImpact] = useState({ total: 0, byCategory: [] });
   const [donatedImpact, setDonatedImpact] = useState({ total: 0, byCategory: [] });
   const [expiringAlerts, setExpiringAlerts] = useState([]);
-  const [expiredAlerts, setExpiredAlerts] = useState([]);
   const [criticalAlerts, setCriticalAlerts] = useState([]);
   const [categoryStats, setCategoryStats] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -102,12 +101,7 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           .filter(b => b.daysLeft >= 0 && b.daysLeft <= 15)
           .sort((a, b) => a.daysLeft - b.daysLeft);
 
-        const expired = activeBatchesWithDays
-          .filter(b => b.daysLeft < 0)
-          .sort((a, b) => a.daysLeft - b.daysLeft);
-
         setExpiringAlerts(expiring);
-        setExpiredAlerts(expired);
 
         // 2. Estoque Crítico
         const itemTotals = items.map(item => {
@@ -131,9 +125,9 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           const totalQty = catItems.reduce((sum, i) => sum + i.totalQty, 0);
           const minQty = catItems.reduce((sum, i) => sum + i.min_stock_level, 0);
           if (catItems.length === 0 && totalQty === 0) return null;
-          
+
           const unit = catItems.length > 0 ? catItems[0].unit_of_measure : '';
-          
+
           return { name: catName, emoji: CATEGORY_EMOJIS[catName] || "📦", qty: totalQty, minQty, unit };
         }).filter(Boolean);
         setCategoryStats(stats);
@@ -149,9 +143,9 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           acc[cat] = (acc[cat] || 0) + (b.initial_quantity * (b.item_conversion_factor || 1));
           return acc;
         }, {});
-        setReceivedImpact({ 
-          total: dashReceivedTotal, 
-          byCategory: Object.entries(groupedReceived).map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg) 
+        setReceivedImpact({
+          total: dashReceivedTotal,
+          byCategory: Object.entries(groupedReceived).map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg)
         });
 
         // 5. Impacto SAÍDAS
@@ -172,9 +166,9 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
             groupedDonated[cat] = (groupedDonated[cat] || 0) + weight;
           }
         });
-        setDonatedImpact({ 
-          total: totalDonatedKg, 
-          byCategory: Object.entries(groupedDonated).map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg) 
+        setDonatedImpact({
+          total: totalDonatedKg,
+          byCategory: Object.entries(groupedDonated).map(([category, kg]) => ({ category, kg })).sort((a, b) => b.kg - a.kg)
         });
 
       } catch (err) {
@@ -263,48 +257,18 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
                   ) : (
                     <ul className="so-alert-list" role="list">
                       {criticalAlerts.map((item, i) => {
-                        const pct = (item.totalQty / item.min_stock_level) * 100;
                         return (
                           <li key={i} className="so-alert-item so-alert-item--urgent">
                             <div className="so-alert-item__info">
                               <span className="so-alert-item__name">{CATEGORY_EMOJIS[item.category] || "📦"} {item.name}</span>
                               <span className="so-alert-item__cat">{item.category}</span>
                             </div>
-                            <span className="so-alert-item__days">{pct.toFixed(0)}% do min.</span>
+                            <span className="so-alert-item__days">
+                              {item.totalQty.toFixed(1)} / {item.min_stock_level.toFixed(1)} {item.unit_of_measure}
+                            </span>
                           </li>
                         )
                       })}
-                    </ul>
-                  )}
-                </div>
-
-                {/* Lotes vencidos */}
-                <div className="so-alert-panel so-alert-panel--expired">
-                  <div className="so-alert-panel__header">
-                    <span aria-hidden="true">🗑️</span>
-                    <span>Lotes Vencidos</span>
-                    <span className="so-alert-panel__count so-alert-panel__count--expired" aria-label={`${expiredAlerts.length} lotes`}>
-                      {expiredAlerts.length}
-                    </span>
-                  </div>
-                  {expiredAlerts.length === 0 ? (
-                    <p className="so-alert-panel__empty">✅ Nenhum lote vencido no estoque.</p>
-                  ) : (
-                    <ul className="so-alert-list" role="list">
-                      {expiredAlerts.map((b, i) => (
-                        <li 
-                          key={i} 
-                          className="so-alert-item so-alert-item--urgent so-alert-item--clickable"
-                          onClick={() => onViewBatches(b.id)}
-                          title="Clique para ver detalhes do lote"
-                        >
-                          <div className="so-alert-item__info">
-                            <span className="so-alert-item__name">{b.item_name}</span>
-                            <span className="so-alert-item__cat">{b.item_category} • {b.current_quantity}{b.item_unit_of_measure}</span>
-                          </div>
-                          <span className="so-alert-item__days">Vencido</span>
-                        </li>
-                      ))}
                     </ul>
                   )}
                 </div>

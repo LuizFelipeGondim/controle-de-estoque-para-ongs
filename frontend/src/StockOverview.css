@@ -30,12 +30,10 @@
   bottom: 0;
   z-index: 0;
   pointer-events: none;
-  background: linear-gradient(
-    45deg,
-    rgba(46, 125, 82, 0.3),
-    rgba(245, 166, 35, 0.2),
-    rgba(46, 125, 82, 0.3)
-  );
+  background: linear-gradient(45deg,
+      rgba(46, 125, 82, 0.3),
+      rgba(245, 166, 35, 0.2),
+      rgba(46, 125, 82, 0.3));
   background-size: 200% 200%;
   animation: dynamicBorder 15s ease infinite;
   mask-image: linear-gradient(to right, black 0%, transparent 25%, transparent 75%, black 100%);
@@ -43,9 +41,17 @@
 }
 
 @keyframes dynamicBorder {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 .so-header,
