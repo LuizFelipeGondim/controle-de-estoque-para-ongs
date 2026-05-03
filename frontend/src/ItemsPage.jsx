@@ -49,7 +49,15 @@ function BatchItem({ b, unit, isExpired }) {
   );
 }
 
-export default function ItemsPage({ onBack }) {
+export default function ItemsPage({ 
+  onBack, 
+  onViewOverview, 
+  onViewHistory, 
+  onViewDonations, 
+  onViewBatches, 
+  onViewItems, 
+  onLogout 
+}) {
   const [items, setItems] = useState([])
   const [batches, setBatches] = useState([])
   const [loading, setLoading] = useState(true)
@@ -225,19 +233,20 @@ export default function ItemsPage({ onBack }) {
     <div className="items-page">
       {/* ══ Header ══ */}
       <header className="items-header">
-        <div className="items-header__brand">
+        <div className="items-header__brand" onClick={onViewOverview} style={{ cursor: 'pointer' }}>
           <div className="items-header__logo" aria-hidden="true">🌱</div>
           <span className="items-header__brand-name">
             ONG<span>Conecta</span>
           </span>
         </div>
-        <button
-          className="items-header__back"
-          onClick={onBack}
-          aria-label="Voltar para a visão geral"
-        >
-          Voltar
-        </button>
+        <nav className="items-header__nav">
+          <button className="items-header__nav-btn" onClick={onViewOverview}>Overview</button>
+          <button className="items-header__nav-btn" onClick={onViewHistory}>Histórico</button>
+          <button className="items-header__nav-btn" onClick={onViewDonations}>Doações</button>
+          <button className="items-header__nav-btn" onClick={onViewBatches}>Lotes</button>
+          <button className="items-header__nav-btn items-header__nav-btn--active" onClick={onViewItems}>Itens</button>
+        </nav>
+        <button className="items-header__logout" onClick={onLogout}>Sair</button>
       </header>
 
       {/* ══ Main Content ══ */}

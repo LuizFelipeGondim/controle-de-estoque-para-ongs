@@ -57,7 +57,14 @@ function daysLabel(days) {
   return `Vence em ${days} dias`
 }
 
-export default function StockOverview({ onLogout, onViewItems, onViewBatches, onViewDonations, onViewHistory }) {
+export default function StockOverview({ 
+  onLogout, 
+  onViewItems, 
+  onViewBatches, 
+  onViewDonations, 
+  onViewHistory,
+  onViewOverview 
+}) {
   const [receivedImpact, setReceivedImpact] = useState({ total: 0, byCategory: [] });
   const [donatedImpact, setDonatedImpact] = useState({ total: 0, byCategory: [] });
   const [expiringAlerts, setExpiringAlerts] = useState([]);
@@ -192,6 +199,7 @@ export default function StockOverview({ onLogout, onViewItems, onViewBatches, on
           <span className="so-header__brand-name">ONG<span>Conecta</span></span>
         </div>
         <nav className="so-header__nav">
+          <button className="so-header__nav-btn so-header__nav-btn--active" onClick={onViewOverview}>Overview</button>
           <button className="so-header__nav-btn" onClick={onViewHistory}>Histórico</button>
           <button className="so-header__nav-btn" onClick={onViewDonations}>Doações</button>
           <button className="so-header__nav-btn" onClick={onViewBatches}>Lotes</button>

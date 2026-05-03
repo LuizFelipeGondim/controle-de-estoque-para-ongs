@@ -16,7 +16,17 @@ const CATEGORY_EMOJIS = {
   "outros": "📦"
 };
 
-export default function BatchesPage({ onBack, initialBatchId, onClearInitialBatch }) {
+export default function BatchesPage({ 
+  onBack, 
+  initialBatchId, 
+  onClearInitialBatch,
+  onViewOverview,
+  onViewHistory,
+  onViewDonations,
+  onViewBatches,
+  onViewItems,
+  onLogout
+}) {
   const [batches, setBatches] = useState([])
   const [items, setItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -206,19 +216,20 @@ export default function BatchesPage({ onBack, initialBatchId, onClearInitialBatc
     <div className="batches-page">
       {/* ══ Header ══ */}
       <header className="batches-header">
-        <div className="batches-header__brand">
+        <div className="batches-header__brand" onClick={onViewOverview} style={{ cursor: 'pointer' }}>
           <div className="batches-header__logo" aria-hidden="true">🌱</div>
           <span className="batches-header__brand-name">
             ONG<span>Conecta</span>
           </span>
         </div>
-        <button
-          className="batches-header__back"
-          onClick={onBack}
-          aria-label="Voltar para a visão geral"
-        >
-          Voltar
-        </button>
+        <nav className="batches-header__nav">
+          <button className="batches-header__nav-btn" onClick={onViewOverview}>Overview</button>
+          <button className="batches-header__nav-btn" onClick={onViewHistory}>Histórico</button>
+          <button className="batches-header__nav-btn" onClick={onViewDonations}>Doações</button>
+          <button className="batches-header__nav-btn batches-header__nav-btn--active" onClick={onViewBatches}>Lotes</button>
+          <button className="batches-header__nav-btn" onClick={onViewItems}>Itens</button>
+        </nav>
+        <button className="batches-header__logout" onClick={onLogout}>Sair</button>
       </header>
 
       {/* ══ Main Content ══ */}

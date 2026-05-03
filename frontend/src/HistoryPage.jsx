@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react'
 import { API_URL } from './config/api'
 import './HistoryPage.css'
 
-export default function HistoryPage({ onBack }) {
+export default function HistoryPage({ 
+  onBack,
+  onViewOverview,
+  onViewHistory,
+  onViewDonations,
+  onViewBatches,
+  onViewItems,
+  onLogout
+}) {
   const [movements, setMovements] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -84,19 +92,20 @@ export default function HistoryPage({ onBack }) {
     <div className="history-page">
       {/* ══ Header ══ */}
       <header className="history-header">
-        <div className="history-header__brand">
+        <div className="history-header__brand" onClick={onViewOverview} style={{ cursor: 'pointer' }}>
           <div className="history-header__logo" aria-hidden="true">🌱</div>
           <span className="history-header__brand-name">
             ONG<span>Conecta</span>
           </span>
         </div>
-        <button
-          className="history-header__back"
-          onClick={onBack}
-          aria-label="Voltar para a visão geral"
-        >
-          Voltar
-        </button>
+        <nav className="history-header__nav">
+          <button className="history-header__nav-btn" onClick={onViewOverview}>Overview</button>
+          <button className="history-header__nav-btn history-header__nav-btn--active" onClick={onViewHistory}>Histórico</button>
+          <button className="history-header__nav-btn" onClick={onViewDonations}>Doações</button>
+          <button className="history-header__nav-btn" onClick={onViewBatches}>Lotes</button>
+          <button className="history-header__nav-btn" onClick={onViewItems}>Itens</button>
+        </nav>
+        <button className="history-header__logout" onClick={onLogout}>Sair</button>
       </header>
 
       {/* ══ Main Content ══ */}

@@ -2,7 +2,15 @@ import { useEffect, useState } from 'react'
 import { API_URL } from './config/api'
 import './DonationsPage.css'
 
-export default function DonationsPage({ onBack }) {
+export default function DonationsPage({ 
+  onBack,
+  onViewOverview,
+  onViewHistory,
+  onViewDonations,
+  onViewBatches,
+  onViewItems,
+  onLogout
+}) {
   const [packets, setPackets] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -447,11 +455,20 @@ export default function DonationsPage({ onBack }) {
   return (
     <div className="donations-page">
       <header className="donations-header">
-        <div className="donations-header__brand">
+        <div className="donations-header__brand" onClick={onViewOverview} style={{ cursor: 'pointer' }}>
           <div className="donations-header__logo" aria-hidden="true">🌱</div>
-          <span className="donations-header__brand-name">ONG<span>Conecta</span></span>
+          <span className="donations-header__brand-name">
+            ONG<span>Conecta</span>
+          </span>
         </div>
-        <button className="donations-header__back" onClick={onBack}>Voltar</button>
+        <nav className="donations-header__nav">
+          <button className="donations-header__nav-btn" onClick={onViewOverview}>Overview</button>
+          <button className="donations-header__nav-btn" onClick={onViewHistory}>Histórico</button>
+          <button className="donations-header__nav-btn donations-header__nav-btn--active" onClick={onViewDonations}>Doações</button>
+          <button className="donations-header__nav-btn" onClick={onViewBatches}>Lotes</button>
+          <button className="donations-header__nav-btn" onClick={onViewItems}>Itens</button>
+        </nav>
+        <button className="donations-header__logout" onClick={onLogout}>Sair</button>
       </header>
 
       <main className="donations-main">
