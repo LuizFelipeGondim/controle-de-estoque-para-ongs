@@ -40,10 +40,63 @@ export const mockBatches = [
     entry_date: '2026-01-01',
     status: 'disponível',
   },
+  {
+    id: 2,
+    item_type_id: 2,
+    item_name: 'Feijão',
+    item_category: 'grão',
+    item_unit_of_measure: 'kg',
+    item_conversion_factor: 1,
+    initial_quantity: 20,
+    current_quantity: 20,
+    expiration_date: '2020-01-01', // vencido
+    entry_date: '2026-01-01',
+    status: 'disponível',
+  },
+  {
+    id: 3,
+    item_type_id: 1,
+    item_name: 'Arroz',
+    item_category: 'cereal',
+    item_unit_of_measure: 'kg',
+    item_conversion_factor: 1,
+    initial_quantity: 30,
+    current_quantity: 0,
+    expiration_date: '2027-06-01',
+    entry_date: '2026-01-01',
+    status: 'esgotado',
+  },
 ]
 
-export const mockDonationPackets = []
-export const mockDonationItems = []
+export const mockDonationPackets = [
+  {
+    id: 1,
+    destination: 'Abrigo Esperança',
+    destination_address: 'Rua das Flores, 123',
+    donation_date: '2027-01-15',
+    notes: 'Entrega urgente',
+    status: 'preparando',
+  },
+  {
+    id: 2,
+    destination: 'Casa do Menor',
+    destination_address: null,
+    donation_date: '2026-12-20',
+    notes: '',
+    status: 'finalizado',
+  },
+]
+
+export const mockDonationItems = [
+  {
+    id: 1,
+    donation_packet_id: 1,
+    batch_id: 1,
+    quantity_removed: 10,
+    item_name: 'Arroz',
+    item_unit: 'kg',
+  },
+]
 
 // ─── Handlers padrão ─────────────────────────────────────────────────────────
 
@@ -81,13 +134,55 @@ export const handlers = [
     return HttpResponse.json(mockBatches)
   }),
 
+  http.post('http://localhost:3333/batch', async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({ id: 99, ...body }, { status: 201 })
+  }),
+
+  http.delete('http://localhost:3333/batch/:id', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
   // Donations
   http.get('http://localhost:3333/donation-packets', () => {
     return HttpResponse.json(mockDonationPackets)
   }),
 
+  http.get('http://localhost:3333/donation-packets/:id', ({ params }) => {
+    const packet = mockDonationPackets.find(p => p.id === Number(params.id))
+    return packet ? HttpResponse.json(packet) : new HttpResponse(null, { status: 404 })
+  }),
+
+  http.post('http://localhost:3333/donation-packets', async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({ id: 99, status: 'preparando', ...body }, { status: 201 })
+  }),
+
+  http.delete('http://localhost:3333/donation-packets/:id', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.patch('http://localhost:3333/donation-packets/:id/status', async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({ status: body.status })
+  }),
+
   http.get('http://localhost:3333/donation-items', () => {
     return HttpResponse.json(mockDonationItems)
+  }),
+
+  http.post('http://localhost:3333/donation-items', async ({ request }) => {
+    const body = await request.json()
+    return HttpResponse.json({ id: 99, ...body }, { status: 201 })
+  }),
+
+  http.delete('http://localhost:3333/donation-items/:id', () => {
+    return new HttpResponse(null, { status: 204 })
+  }),
+
+  http.get('http://localhost:3333/batch/:id', ({ params }) => {
+    const batch = mockBatches.find(b => b.id === Number(params.id))
+    return batch ? HttpResponse.json(batch) : new HttpResponse(null, { status: 404 })
   }),
 ]
 

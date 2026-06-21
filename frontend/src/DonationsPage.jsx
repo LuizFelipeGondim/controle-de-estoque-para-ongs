@@ -537,6 +537,7 @@ export default function DonationsPage({
         )}
 
         {loading && <div className="donations-loading">Carregando...</div>}
+        {error && <div className="donations-error">{error}</div>}
 
         <div className="donations-grid">
           {packets

@@ -228,8 +228,10 @@ describe('ItemsPage — modal de visualização de item', () => {
     await waitFor(() => screen.getByText('Arroz'))
     await user.click(screen.getByText('Arroz'))
 
-    // O modal de visualização deve aparecer
-    const modal = screen.getByRole('heading', { name: 'Arroz' })
+    // O modal de visualização deve aparecer — usa within para evitar ambiguidade
+    // com o <h3> do card que permanece visível atrás do modal
+    const modalContent = document.querySelector('.item-modal-content')
+    const modal = within(modalContent).getByRole('heading', { name: 'Arroz' })
     expect(modal).toBeInTheDocument()
 
     // Deve mostrar informações do item
@@ -238,16 +240,21 @@ describe('ItemsPage — modal de visualização de item', () => {
   })
 
   it('exibe "Nenhum lote disponível" para itens sem lotes', async () => {
+    // Sobrescreve /batch para retornar vazio, garantindo que o Feijão não tem lotes
+    server.use(
+      http.get('http://localhost:3333/batch', () => HttpResponse.json([]))
+    )
+
     const user = userEvent.setup()
     renderPage()
 
     await waitFor(() => screen.getByText('Feijão'))
-    // Feijão (id=2) não tem lotes no mock
     await user.click(screen.getByText('Feijão'))
 
     await waitFor(() => {
       expect(screen.getByText(/nenhum lote disponível/i)).toBeInTheDocument()
     })
+
   })
 
   it('fecha o modal ao clicar no overlay', async () => {
@@ -257,8 +264,10 @@ describe('ItemsPage — modal de visualização de item', () => {
     await waitFor(() => screen.getByText('Arroz'))
     await user.click(screen.getByText('Arroz'))
 
-    // Verifica que o modal está aberto
-    expect(screen.getByRole('heading', { name: 'Arroz' })).toBeInTheDocument()
+    // Verifica que o modal está aberto — usa within para evitar ambiguidade
+    // com o <h3> do card que permanece visível atrás do modal
+    const modalContent = document.querySelector('.item-modal-content')
+    expect(within(modalContent).getByRole('heading', { name: 'Arroz' })).toBeInTheDocument()
 
     // Fecha pelo overlay (clica fora do conteúdo do modal)
     // O overlay é o div com classe item-modal-overlay

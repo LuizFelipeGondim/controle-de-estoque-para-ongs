@@ -64,4 +64,55 @@ describe('App — fluxo de navegação', () => {
       expect(screen.getByRole('heading', { name: /bem-vindo de volta/i })).toBeInTheDocument()
     })
   })
+
+  it('navega para a página de Lotes a partir do StockOverview', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await doLogin(user)
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^lotes$/i })).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole('button', { name: /^lotes$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /visão de lotes/i })).toBeInTheDocument()
+    })
+  })
+
+  it('navega para a página de Doações a partir do StockOverview', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await doLogin(user)
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^doações$/i })).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole('button', { name: /^doações$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /pacotes de doação/i })).toBeInTheDocument()
+    })
+  })
+
+  it('navega para a página de Histórico a partir do StockOverview', async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await doLogin(user)
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: /^histórico$/i })).toBeInTheDocument()
+    )
+
+    await user.click(screen.getByRole('button', { name: /^histórico$/i }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: /histórico de movimentações/i })).toBeInTheDocument()
+    })
+  })
 })
