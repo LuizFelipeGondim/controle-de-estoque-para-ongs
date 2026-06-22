@@ -239,7 +239,12 @@ export default function StockOverview({
                   ) : (
                     <ul className="so-alert-list" role="list">
                       {expiringAlerts.map((b, i) => (
-                        <li key={i} className={`so-alert-item so-alert-item--${urgencyMod(b.daysLeft)}`}>
+                        <li 
+                          key={i} 
+                          className={`so-alert-item so-alert-item--${urgencyMod(b.daysLeft)}`}
+                          onClick={() => onViewBatches(b.id)}
+                          style={{ cursor: 'pointer' }}
+                        >
                           <div className="so-alert-item__info">
                             <span className="so-alert-item__name">{b.item_name}</span>
                             <span className="so-alert-item__cat">{b.item_category} • {b.current_quantity}{b.item_unit_of_measure}</span>

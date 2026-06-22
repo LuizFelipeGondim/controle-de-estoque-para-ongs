@@ -1,0 +1,7 @@
+{
+  "testUser": {
+    "email": "admin@ong.com",
+    "password": "admin123",
+    "name": "Administrador ONG"
+  }
+}
